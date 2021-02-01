@@ -1,0 +1,138 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+}
+
+<div class="background-shadow"></div>
+<div class="center-modal">
+    <div class="modal" id="modal-edit">
+        <div class="modal-header" id="modal-header-customer">
+            <h2 id="modal-title-customer"></h2>
+            <a href="#" class="modal-dismiss" id="modal-dismiss-customer"><i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+        <div class="modal-body">
+
+            <div class="error-text"></div>
+
+            <div class="modal-row">
+                <label for="customer-name">Nazwa kontrachenta</label>
+                <input type="text" id="customerName">
+            </div>
+
+            <div class="modal-row">
+                <label for="customer-code">Numer</label>
+                <input type="text" id="customerCode">
+            </div>
+
+            <div class="modal-row">
+                <label for="customer-street">Ulica</label>
+                <input type="text" id="customerStreet">
+            </div>
+
+            <div class="modal-row">
+                <label for="customer-zipCode">Kod pocztowy</label>
+                <input type="text" id="customerZipCode">
+            </div>
+
+            <div class="modal-row">
+                <label for="customer-city">Miasto</label>
+                <input type="text" id="customerCity">
+            </div>
+
+            <div class="modal-row">
+                <label for="customer-type">Rodzaj</label>
+                <select class="form-control" name="sort" id="customerType">
+                    <option value=""></option>
+                    <option value="1">Dostawca</option>
+                    <option value="2">Odbiorca</option>
+                    <option value="3">Dostawca / Odbiorca</option>
+                </select>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-customer"></button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-inf">
+        <div class="modal-header" id="modal-header-inf">
+            <h2>Informacje</h2>
+            <a href="#" class="modal-dismiss" id="modal-dismiss-inf"> <i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+        <div class="modal-body">
+
+            <div class="modal-row">
+                <label for="customer-name">Nazwa magazynu:</label>
+                <span id="customer-name-information"></span>
+            </div>
+
+            <div class="modal-row">
+                <label for="customer-created">Utworzono:</label>
+                <span id="customer-created-information"></span>
+            </div>
+
+            <div class="modal-row">
+                <label for="customer-user">Przez:</label>
+                <span id="customer-user-information"></span>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="modal-btn-inf">Zamknij</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-delete">
+
+        <div class="modal-header" id="modal-header-delete">
+            <h2>Usuwanie</h2>
+            <a href="#" class="modal-dismiss"><i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-row-delete">
+                <i class="fa fa-question-circle"></i>
+                <h2>Potwierdzenie</h2>
+                <p>Na pewno chcesz usunąć tego kontrahenta?</p>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button id="button-cancel">Anuluj</button>
+            <button id="button-delete">Usuń</button>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="card">
+
+    <div class="card-header">
+        <h2>Lista Kontrachentów</h2>
+    </div>
+
+    <div class="card-body">
+        <button type="button" class="btn-modal" data-type="new">nowy kontrachent</button>
+        <div class="table-container">
+            <table id="customer-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Nazwa kontrahenta</th>
+                        <th>Adres</th>
+                        <th>Numer</th>
+                        <th>Rodzaj</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="~/Scripts/customers.js"></script>

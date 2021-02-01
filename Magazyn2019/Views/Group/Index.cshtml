@@ -1,0 +1,118 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+}
+
+<div class="background-shadow"></div>
+<div class="center-modal">
+    <div class="modal" id="modal-edit">
+        <div class="modal-header" id="modal-header-group">
+            <h2 id="modal-title-group"></h2>
+            <a href="#" class="modal-dismiss" id="modal-dismiss-group"><i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+        <div class="modal-body">
+
+            <div class="error-text"></div>
+
+            <div class="modal-row">
+                <label for="group-name">Nazwa grupy</label>
+                <input type="text" id="groupName">
+            </div>
+
+            <div class="modal-row">
+                <label for="group-code">Kod grupy</label>
+                <input type="text" id="groupCode">
+            </div>
+
+            <div class="modal-row">
+                <label for="group-description">Opis</label>
+                <textarea type="text" id="groupDescription"></textarea>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-group"></button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-inf">
+        <div class="modal-header" id="modal-header-inf">
+            <h2>Informacje</h2>
+            <a href="#" class="modal-dismiss" id="modal-dismiss-inf"> <i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+        <div class="modal-body">
+
+            <div class="modal-row">
+                <label for="group-name">Nazwa grupy:</label>
+                <span id="group-name-information"></span>
+            </div>
+
+            <div class="modal-row">
+                <label for="group-created">Utworzono:</label>
+                <span id="group-created-information"></span>
+            </div>
+
+            <div class="modal-row">
+                <label for="group-user">Przez:</label>
+                <span id="group-user-information"></span>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="modal-btn-inf">Zamknij</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-delete">
+
+        <div class="modal-header" id="modal-header-delete">
+            <h2>Usuwanie</h2>
+            <a href="#" class="modal-dismiss"><i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-row-delete">
+                <i class="fa fa-question-circle"></i>
+                <h2>Potwierdzenie</h2>
+                <p>Na pewno chcesz usunąć tą grupę?</p>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button id="button-cancel">Anuluj</button>
+            <button id="button-delete">Usuń</button>
+        </div>
+
+    </div>
+</div>
+
+
+
+<div class="card">
+
+    <div class="card-header">
+        <h2>Lista grup</h2>
+    </div>
+
+    <div class="card-body">
+        <button type="button" class="btn-modal" data-type="new">nowa grupa</button>
+        <div class="table-container">
+            <table id="group-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Nazwa grupy</th>
+                        <th>Kod grupy</th>
+                        <th>Opis</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="~/Scripts/group.js"></script>

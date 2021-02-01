@@ -1,0 +1,138 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+}
+
+<div class="background-shadow"></div>
+<div class="center-modal">
+    <div class="modal" id="modal-edit">
+        <div class="modal-header" id="modal-header-product">
+            <h2 id="modal-title-product"></h2>
+            <a href="#" class="modal-dismiss" id="modal-dismiss-product"><i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+        <div class="modal-body">
+
+            <div class="error-text"></div>
+
+            <div class="modal-row">
+                <label for="product-name">Nazwa produktu</label>
+                <input type="text" id="productName">
+            </div>
+
+            <div class="modal-row">
+                <label for="product-code">Kod produktu</label>
+                <input type="text" id="productCode">
+            </div>
+
+            <div class="modal-row">
+                <label for="group-type">Grupa</label>
+                <select class="form-control" name="sort" id="groupType">
+                    <option value=""></option>
+                </select>
+            </div>
+
+            <div class="modal-row">
+                <label for="unit-type">Jednostka</label>
+                <select class="form-control" name="sort" id="unitType">
+                    <option value=""></option>
+                    <option value="1">Sztuki</option>
+                    <option value="2">Litry</option>
+                    <option value="3">Kilogramy</option>
+                </select>
+            </div>
+
+            <div class="modal-row">
+                <label for="product-description">Opis</label>
+                <textarea type="text" id="productDescription"></textarea>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-product"></button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-inf">
+        <div class="modal-header" id="modal-header-inf">
+            <h2>Informacje</h2>
+            <a href="#" class="modal-dismiss" id="modal-dismiss-inf"> <i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+        <div class="modal-body">
+
+            <div class="modal-row">
+                <label for="product-name">Nazwa produktu:</label>
+                <span id="product-name-information"></span>
+            </div>
+
+            <div class="modal-row">
+                <label for="product-created">Utworzono:</label>
+                <span id="product-created-information"></span>
+            </div>
+
+            <div class="modal-row">
+                <label for="product-user">Przez:</label>
+                <span id="product-user-information"></span>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="modal-btn-inf">Zamknij</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-delete">
+
+        <div class="modal-header" id="modal-header-delete">
+            <h2>Usuwanie</h2>
+            <a href="#" class="modal-dismiss"><i class="text-dark fas fa-times p-2"></i></a>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-row-delete">
+                <i class="fa fa-question-circle"></i>
+                <h2>Potwierdzenie</h2>
+                <p>Na pewno chcesz usunąć ten produkt?</p>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button id="button-cancel">Anuluj</button>
+            <button id="button-delete">Usuń</button>
+        </div>
+
+    </div>
+</div>
+
+
+
+<div class="card">
+
+    <div class="card-header">
+        <h2>Lista produktów</h2>
+    </div>
+
+    <div class="card-body">
+        <button type="button" class="btn-modal" data-type="new">nowy produkt</button>
+
+        <div class="table-container">
+            <table id="product-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Nazwa produktu</th>
+                        <th>Kod produktu</th>
+                        <th>Grupa</th>
+                        <th>Jednostka</th>
+                        <th>Opis</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="~/Scripts/product.js"></script>
