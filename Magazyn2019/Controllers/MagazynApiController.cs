@@ -370,38 +370,26 @@ namespace Magazyn2019.Controllers
         [Route("Products")]
         public dynamic getProduct()
         {
-            var products = db.Products.Select(x =>
-            new { x.id_product, x.id_group,x.name, x.code, x.description, x.unit, x.created, x.id_user, group_name = x.Group.name, x.is_active }).Where( x => x.is_active == true);
+            var products = unitOfWork.ProductRepository.GetAllActiveProducts();
             return products;
         }
         [HttpGet]
         [Route("Products/{id}")]
         public dynamic getProductsForId(int id)
         {
-            var product = from p in db.Products
-                        where id == p.id_product && p.is_active == true
-                        select new
-                        {
-                            id_group = p.id_group,
-                            code = p.code,
-                            name = p.name,
-                            description = p.description,
-                            unit = p.unit,
-                            created = p.created,
-                            group_name = p.Group.name,
-                            userName = p.User.fullName,
-                        };
+            var product = unitOfWork.ProductRepository.GetActiveProductByID(id);
             return Json(product);
         }
         [HttpDelete]
         [Route("Products/{id}")]
         public void deleteProduct(int id)
         {
-            Product product = db.Products.Where(x => x.id_product == id).FirstOrDefault();
+            Product product = unitOfWork.ProductRepository.GetById(id);
             if (product != null)
             {
                 product.is_active = false;
-                db.SaveChanges();
+                unitOfWork.ProductRepository.Update(product);
+                unitOfWork.Complete();
             }
         }
         [HttpPost]
@@ -411,9 +399,8 @@ namespace Magazyn2019.Controllers
 
             Product product = new Product();
 
-            var id = HttpContext.Current.Session["ActiveUserId"];
-            int id_user = (int)id;
-            User activeUser = db.Users.Single(x => x.id_user == id_user);
+            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
+            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
 
             try
             {
@@ -429,68 +416,61 @@ namespace Magazyn2019.Controllers
                 product.Group = db.Groups.Single(x => x.id_group == product.id_group);
 
             }
-            catch (System.FormatException e)
+            catch (Exception)
             {
                 return 0;
             }
-            if (db.Products.Any(x => x.name == product.name && x.is_active == true))
+            if (unitOfWork.ProductRepository.CheckIfExistActiveProductByName(product.name))
             {
                 return 1;
             }
-            if (db.Products.Any(x => x.code == product.code && x.is_active == true))
+            if (unitOfWork.ProductRepository.CheckIfExistActiveProductByCode(product.code))
             {
                 return 2;
             }
 
-            db.Products.Add(product);
-            db.SaveChanges();
+            unitOfWork.ProductRepository.Update(product);
+            unitOfWork.Complete();
+
             return -1;
         }
         [HttpPut]
         [Route("Products/{id}")]
         public int putProduct(int id, JObject jsonResult)
         {
-            Product product = new Product();
+            Product productForEdit = unitOfWork.ProductRepository.GetById(id);
             try
             {
-                product.id_group = (int)jsonResult.SelectToken("groupType");
-                product.code = (int)jsonResult.SelectToken("code");
-                product.name = (string)jsonResult.SelectToken("name");
-                product.unit = (int)jsonResult.SelectToken("unitType");
-                product.description = (string)jsonResult.SelectToken("description");
-                product.Group = db.Groups.Single(x => x.id_group == product.id_group);
+                productForEdit.id_group = (int)jsonResult.SelectToken("groupType");
+                productForEdit.code = (int)jsonResult.SelectToken("code");
+                productForEdit.name = (string)jsonResult.SelectToken("name");
+                productForEdit.unit = (int)jsonResult.SelectToken("unitType");
+                productForEdit.description = (string)jsonResult.SelectToken("description");
+                productForEdit.Group = db.Groups.Single(x => x.id_group == productForEdit.id_group);
             }
-            catch (System.FormatException e)
+            catch (Exception)
             {
                 return 0;
             }
 
-            var productList = from p in db.Products
-                              where p.is_active == true
-                              select p;
+            var productList = unitOfWork.ProductRepository.GetAll().Where(g => g.is_active == true);
 
             foreach (Product p in productList)
             {
                 if (p.id_product != id)
                 {
-                    if (p.name.Equals(product.name))
+                    if (p.name.Equals(productForEdit.name))
                     {
                         return 1;
                     }
-                    if (p.code == product.code)
+                    if (p.code == productForEdit.code)
                     {
                         return 2;
                     }
                 }
             }
-            Product productEdit = db.Products.Single(x => x.id_product == id);
-            productEdit.id_group = product.id_group;
-            productEdit.code = product.code;
-            productEdit.name = product.name;
-            productEdit.unit = product.unit;
-            productEdit.description = product.description;
-            product.Group = db.Groups.Single(x => x.id_group == product.id_group);
-            db.SaveChanges();
+            unitOfWork.ProductRepository.Update(productForEdit);
+            unitOfWork.Complete();
             return -1;
         }
         /*Moves*/
@@ -498,8 +478,8 @@ namespace Magazyn2019.Controllers
         [Route("Moves")]
         public void postMoves(JObject jsonResult)
         {
-            var id = HttpContext.Current.Session["ActiveUserId"];
-            int id_user = (int)id;
+            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
+            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
 
             Move move = new Move();
 
@@ -507,31 +487,30 @@ namespace Magazyn2019.Controllers
 
             move.id_warehouse1 = (int)jsonResult.SelectToken("warehouseOne");
             move.time = (DateTime)jsonResult.SelectToken("date");
-            move.id_user = id_user;
-            move.number = getNumberOfDocuments(move.type);
-            move.WarehouseOne = db.Warehouses.Single(x => x.id_warehouse == move.id_warehouse1);
-            move.User = db.Users.Single(x => x.id_user == move.id_user);
+            move.id_user = idUser;
+            move.number = unitOfWork.MoveRepository.getNumberOfDocuments(move.type);
+            move.WarehouseOne = unitOfWork.WarehouseRepository.GetById(move.id_warehouse1);
+            move.User = activeUser;
 
             if (move.type != 3)
             {
                 move.id_warehouse2 = 2;
                 move.id_custmer = (int)jsonResult.SelectToken("customer");
-                move.Customer = db.Customers.Single(x => x.id_customer == move.id_custmer);
+                move.Customer = unitOfWork.CustomerRepository.GetById(move.id_custmer);
             }
             else
             {
                 move.id_custmer = 0;
                 move.id_warehouse2 = (int)jsonResult.SelectToken("customer");
-                move.WarehouseTwo = db.Warehouses.Single(x => x.id_warehouse == move.id_warehouse2);
+                move.WarehouseTwo = unitOfWork.WarehouseRepository.GetById(move.id_warehouse2);
             }
 
-            //move.Inventories = addInventories(jsonResult, move.id_warehouse1, move.id_warehouse2, move.type);
             move.Inventories = inventoryOperations(jsonResult, move.id_warehouse1, move.id_warehouse2, move.type);
 
+            unitOfWork.MoveRepository.Insert(move);
+            unitOfWork.Complete();
 
-            db.Moves.Add(move);
-            db.SaveChanges();
-
+            //generate pdf document
             PdfDocument pdfDocument = new PdfDocument();
             byte[] moveDocument = pdfDocument.preparePdf(move);
             pdfDocument.savePDF(moveDocument, move);
@@ -693,93 +672,6 @@ namespace Magazyn2019.Controllers
                 db.SaveChanges();
             }
         }
-
-        /*
-        public List<Inventory> addInventories(JObject inventoriesArray, int idWarehouseOne, int idWarehouseTwo, int movementType)
-        {
-
-            List<Inventory> inventories = new List<Inventory>();
-
-            Inventory inventory = new Inventory(); ;
-
-            string producetName;
-            var inventoriesList = from i in db.Inventories
-                                  select i;
-
-            foreach (var product in inventoriesArray["products"])
-            {
-                var inventoryFromJson = new Inventory();
-                producetName = (string)product["productName"];
-                inventoryFromJson.id_warehouse = idWarehouseOne;
-                inventoryFromJson.id_product = (int)product["productId"];
-                inventoryFromJson.Product = db.Products.SingleOrDefault(p => p.id_product == inventoryFromJson.id_product);
-                inventoryFromJson.amount = (int)product["amount"];
-                inventories.Add(inventoryFromJson);
-            }
-
-            System.Diagnostics.Debug.WriteLine(movementType);
-
-            foreach (var i in inventories)
-            {
-
-                var updateInventory = db.Inventories.SingleOrDefault(x => x.id_product == i.id_product && x.id_warehouse == i.id_warehouse);
-
-
-                if (movementType == 1)
-                {
-                    if (updateInventory != null)
-                    {
-                        updateInventory.amount += i.amount;
-                        db.SaveChanges();
-                    }
-                    else
-                    {
-                        db.Inventories.Add(i);
-                        db.SaveChanges();
-                    }
-                }
-                else if (movementType == 2)
-                {
-                    if (updateInventory != null)
-                    {
-                        updateInventory.amount -= i.amount;
-                        db.SaveChanges();
-                    }
-                }
-                else
-                {
-                    var updateInventoryTwo = db.Inventories.SingleOrDefault(x => x.id_product == i.id_product && x.id_warehouse == idWarehouseTwo);
-
-                    updateInventory.amount -= i.amount;
-                    updateInventoryTwo.amount += i.amount;
-
-                    db.SaveChanges();
-                }
-            }
-            return inventories;
-        }
-        */
-        public int getNumberOfDocuments(int type)
-        {
-                var numberOfDocument = (from m in db.Moves
-                                        where m.type == type
-                                        select m ).Max(m => (int?)m.number) ?? 0;
-
-                if (numberOfDocument == 0)
-                {
-                    numberOfDocument = 1;
-                }
-                else
-                {
-                    numberOfDocument++;
-                }
-                return numberOfDocument;
-
-        }
-
-        
-
-
     }
 
 }
