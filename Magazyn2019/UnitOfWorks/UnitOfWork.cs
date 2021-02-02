@@ -13,6 +13,7 @@ namespace Magazyn2019.UnitOfWorks
         public ICustomerRepository CustomerRepository { get; }
         public IUserRepository UserRepository { get; }
         public IWarehouseRepository WarehouseRepository { get; }
+        public IGroupRepository GroupRepository { get; }
 
         public UnitOfWork(Magazyn2019Entities context)
         {
@@ -20,6 +21,7 @@ namespace Magazyn2019.UnitOfWorks
             CustomerRepository = new CustomerRepository(_context);
             UserRepository = new UserRepository(_context);
             WarehouseRepository = new WarehouseRepository(_context);
+            GroupRepository = new GroupRepository(_context);
         }
         public int Complete()
         {

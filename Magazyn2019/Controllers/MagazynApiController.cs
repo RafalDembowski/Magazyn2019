@@ -263,49 +263,39 @@ namespace Magazyn2019.Controllers
         /*Group webapi*/
         [HttpGet]
         [Route("Groups")]
-        public dynamic getGroup()
+        public dynamic getGroups()
         {
-            var groups = db.Groups.Select(x =>
-            new { x.id_group, x.name, x.code,x.description, x.created, x.id_user, x.is_active }).Where(x => x.is_active == true);
+            var groups = unitOfWork.GroupRepository.GetAllActiveGroup();
             return groups;
         }
         [HttpGet]
         [Route("Groups/{id}")]
         public dynamic getGroupsForId(int id)
         {
-            var group = from g in db.Groups
-                           where id == g.id_group && g.is_active == true
-                           select new
-                           {
-                               name = g.name,
-                               code = g.code,
-                               created = g.created,
-                               description = g.description,
-                               userName = g.User.fullName,
-                           };
+            var group = unitOfWork.GroupRepository.GetActiveGroupByID(id);
             return Json(group);
         }
         [HttpDelete]
         [Route("Groups/{id}")]
         public void deleteGroup(int id)
         {
-            Group group = db.Groups.Where(x => x.id_group == id).FirstOrDefault();
+            Group group = unitOfWork.GroupRepository.GetById(id);
             if (group != null)
             {
                 group.is_active = false;
-                db.SaveChanges();
+                unitOfWork.GroupRepository.Update(group);
+                unitOfWork.Complete();
             }
         }
-        [HttpPost]
+    [HttpPost]
         [Route("Groups")]
         public int postGroups(JObject jsonResult)
         {
 
             Group group = new Group();
 
-            var id = HttpContext.Current.Session["ActiveUserId"];
-            int id_user = (int)id;
-            User activeUser = db.Users.Single(x => x.id_user == id_user);
+            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
+            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
 
             try
             {
@@ -318,62 +308,59 @@ namespace Magazyn2019.Controllers
                 group.User = activeUser;
 
             }
-            catch (System.FormatException e)
+            catch (Exception)
             {
                 return 0;
             }
-            if (db.Groups.Any(x => x.name == group.name && x.is_active == true))
+            if (unitOfWork.GroupRepository.CheckIfExistActiveGroupByName(group.name))
             {
                 return 1;
             }
-            if (db.Groups.Any(x => x.code == group.code && x.is_active == true))
+            if (unitOfWork.GroupRepository.CheckIfExistActiveGroupByCode(group.code))
             {
                 return 2;
             }
 
-            db.Groups.Add(group);
-            db.SaveChanges();
+            unitOfWork.GroupRepository.Insert(group);
+            unitOfWork.Complete();
             return -1;
         }
         [HttpPut]
         [Route("Groups/{id}")]
         public int putGroup(int id, JObject jsonResult)
         {
-            Group group = new Group();
+            Group groupForEdit = unitOfWork.GroupRepository.GetById(id);
             try
             {
-                group.code = (int)jsonResult.SelectToken("code");
-                group.name = (string)jsonResult.SelectToken("name");
-                group.description = (string)jsonResult.SelectToken("description");
+                groupForEdit.code = (int)jsonResult.SelectToken("code");
+                groupForEdit.name = (string)jsonResult.SelectToken("name");
+                groupForEdit.description = (string)jsonResult.SelectToken("description");
             }
-            catch (System.FormatException e)
+            catch (Exception)
             {
                 return 0;
             }
 
+            var groupList = unitOfWork.GroupRepository.GetAll().Where(g => g.is_active == true);
 
-            var groupList = from g in db.Groups
-                            where g.is_active == true
-                            select g;
+            //check for other objects with the same code and name
 
             foreach (Group g in groupList)
             {
                 if (g.id_group != id)
                 {
-                    if (g.name.Equals(group.name))
+                    if (g.name.Equals(groupForEdit.name))
                     {
                         return 1;
                     }
-                    if (g.code == group.code)
+                    if (g.code == groupForEdit.code)
                     {
                         return 2;
                     }
                 }
             }
-            Group groupEdit = db.Groups.Single(x => x.id_group == id);
-            groupEdit.code = group.code;
-            groupEdit.name = group.name;
-            db.SaveChanges();
+            unitOfWork.GroupRepository.Update(groupForEdit);
+            unitOfWork.Complete();
             return -1;
         }
 
