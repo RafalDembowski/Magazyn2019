@@ -56,41 +56,26 @@ namespace Magazyn2019.Controllers
             HttpContext.Current.Session["ActiveUserPosition"] = activeUser.position;
             
         }
-        /*użyto tego w celu uniknięcia przetworzenia w json'a całego modelu tj. relacji z nim powiązanych */
         [HttpGet]
         [Route("Warehouses")]
         public dynamic getWarehouses()
         {
-            var wareHouses = db.Warehouses.Select(x =>
-            new {x.id_warehouse, x.code, x.name, x.description, x.created, x.id_user});
+            var wareHouses = unitOfWork.WarehouseRepository.GetAllWarehouses();
             return wareHouses;
         }
         [HttpGet]
         [Route("Warehouses/{id}")]
         public dynamic getWarehouseForId(int id)
         {
-            var warehouse = from w in db.Warehouses
-                            where id == w.id_warehouse
-                            select new
-                            {
-                                name = w.name,
-                                code = w.code,
-                                description = w.description,
-                                created =  w.created,
-                                userName = w.User.fullName,
-                            };
+            var warehouse = unitOfWork.WarehouseRepository.GetWarehouseByID(id);
             return Json(warehouse);
         }
         [HttpDelete]
         [Route("Warehouses/{id}")]
         public void deleteWarehouse(int id)
         {
-            Warehouse warehouse = db.Warehouses.Where(x => x.id_warehouse == id).FirstOrDefault();
-            if (warehouse != null)
-            {
-                db.Warehouses.Remove(warehouse);
-                db.SaveChanges();
-            }
+            unitOfWork.WarehouseRepository.Delete(id);
+            unitOfWork.Complete();
         }
         [HttpPost]
         [Route("Warehouses")]
@@ -99,9 +84,8 @@ namespace Magazyn2019.Controllers
 
             Warehouse warehouse = new Warehouse();
 
-            var id = HttpContext.Current.Session["ActiveUserId"];
-            int id_user=(int)id;
-            User activeUser = db.Users.Single(x => x.id_user == id_user);
+            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
+            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
 
             try
             {
@@ -112,63 +96,62 @@ namespace Magazyn2019.Controllers
                 warehouse.id_user = activeUser.id_user;
                 warehouse.User = activeUser;
             }
-            catch (System.FormatException e)
+            catch (Exception)
             {
                 return 0;
             }
-            if (db.Warehouses.Any(x => x.name == warehouse.name))
+            if (unitOfWork.WarehouseRepository.CheckIfExistWarehouseByName(warehouse.name))
             {
                 return 1;
             }
-            if (db.Warehouses.Any(x => x.code == warehouse.code))
+            if (unitOfWork.WarehouseRepository.CheckIfExistWarehouseByCode(warehouse.code))
             {
                 return 2;
             }
 
-            db.Warehouses.Add(warehouse);
-            db.SaveChanges();
+            unitOfWork.WarehouseRepository.Insert(warehouse);
+            unitOfWork.Complete();
+
             return -1;
         }
         [HttpPut]
         [Route("Warehouses/{id}")]
         public int putWarehouse (int id, JObject jsonResult)
         {
-            Warehouse warehouse = new Warehouse();
+            Warehouse warehouseForEdit = unitOfWork.WarehouseRepository.GetById(id);
             try
             {
-                warehouse.code = (int)jsonResult.SelectToken("code");
-                warehouse.name = (string)jsonResult.SelectToken("name");
-                warehouse.description = (string)jsonResult.SelectToken("description");;
+                warehouseForEdit.code = (int)jsonResult.SelectToken("code");
+                warehouseForEdit.name = (string)jsonResult.SelectToken("name");
+                warehouseForEdit.description = (string)jsonResult.SelectToken("description");;
             }
-            catch (System.FormatException e)
+            catch (Exception)
             {
                 return 0;
             }
 
+            //check for other objects with the same code and name
 
-            var warehouseList = from w in db.Warehouses
-                                  select w;
+            var warehouseList = unitOfWork.WarehouseRepository.GetAll();
 
             foreach (Warehouse w in warehouseList)
             {
                if(w.id_warehouse != id)
                 {
-                    if (w.name.Equals(warehouse.name))
+                    if (w.name.Equals(warehouseForEdit.name))
                     {
                         return 1;
                     }
-                    if (w.code == warehouse.code)
+                    if (w.code == warehouseForEdit.code)
                     {
                         return 2;
                     }
                 }
             }
-               Warehouse warehouseEdit = db.Warehouses.Single(x => x.id_warehouse == id);
-               warehouseEdit.code = warehouse.code;
-               warehouseEdit.name = warehouse.name;
-               warehouseEdit.description = warehouse.description;
-               db.SaveChanges();
-               return -1;
+            unitOfWork.WarehouseRepository.Update(warehouseForEdit);
+            unitOfWork.Complete();
+
+            return -1;
         }
         /*Customer webapi*/
         [HttpGet]

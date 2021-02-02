@@ -202,7 +202,9 @@
     <Compile Include="Repository\ICustomerRepository.cs" />
     <Compile Include="Repository\IGenericRepository.cs" />
     <Compile Include="Repository\IUserRepository.cs" />
+    <Compile Include="Repository\IWarehouseRepository.cs" />
     <Compile Include="Repository\UserRepository.cs" />
+    <Compile Include="Repository\WarehouseRepository.cs" />
     <Compile Include="UnitOfWorks\IUnitOfWork.cs" />
     <Compile Include="UnitOfWorks\UnitOfWork.cs" />
   </ItemGroup>

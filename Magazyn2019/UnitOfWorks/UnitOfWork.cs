@@ -12,12 +12,14 @@ namespace Magazyn2019.UnitOfWorks
         private readonly Magazyn2019Entities _context;
         public ICustomerRepository CustomerRepository { get; }
         public IUserRepository UserRepository { get; }
+        public IWarehouseRepository WarehouseRepository { get; }
 
         public UnitOfWork(Magazyn2019Entities context)
         {
             _context = context;
             CustomerRepository = new CustomerRepository(_context);
             UserRepository = new UserRepository(_context);
+            WarehouseRepository = new WarehouseRepository(_context);
         }
         public int Complete()
         {
