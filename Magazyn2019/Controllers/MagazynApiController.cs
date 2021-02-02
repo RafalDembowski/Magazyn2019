@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System.Web;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Magazyn2019.UnitOfWorks;
 
 namespace Magazyn2019.Controllers
 {
@@ -14,6 +15,12 @@ namespace Magazyn2019.Controllers
     public class MagazynApiController : ApiController
     {
         private Magazyn2019Entities db = new Magazyn2019Entities();
+
+        private UnitOfWork unitOfWork;
+        public MagazynApiController()
+        {
+            unitOfWork = new UnitOfWork( new Magazyn2019Entities());
+        }
 
         [HttpPost]
         [Route("login")]
@@ -168,53 +175,35 @@ namespace Magazyn2019.Controllers
         [Route("Customers")]
         public dynamic getCustomers()
         {
-            var customers = db.Customers.Select(x =>
-            new { x.id_customer, x.name, x.code, x.street, x.zipCode, x.city, x.type, x.created, x.id_user, x.is_active }).Where(x => x.is_active ==true);
+            var customers = unitOfWork.CustomerRepository.GetAllActiveCustomers();
             return customers;
         }
         [HttpGet]
         [Route("Customers/{id}")]
         public dynamic getCustomersForId(int id)
         {
-            var customer = from c in db.Customers
-                            where id == c.id_customer 
-                            && c.is_active == true
-                            select new
-                            {
-                                name = c.name,
-                                code = c.code,
-                                street = c.street,
-                                zipCode = c.zipCode,
-                                city = c.city,
-                                type = c.type,
-                                created = c.created,
-                                userName = c.User.fullName,
-                            };
+            var customer = unitOfWork.CustomerRepository.GetActiveCustomerByID(id);
             return Json(customer);
         }
         [HttpDelete]
         [Route("Customers/{id}")]
         public void deleteCustomer(int id)
         {
-            Customer customer = db.Customers.Where(x => x.id_customer == id).FirstOrDefault();
+            Customer customer = unitOfWork.CustomerRepository.GetById(id);
             if (customer != null)
             {
                 customer.is_active = false;
-                //db.Customers.Remove(customer);
-                db.SaveChanges();
+                unitOfWork.CustomerRepository.Update(customer);
+                unitOfWork.Complete();
             }
         }
         [HttpPost]
         [Route("Customers")]
         public int postCustomers(JObject jsonResult)
         {
-
             Customer customer = new Customer();
-
-            var id = HttpContext.Current.Session["ActiveUserId"];
-            int id_user = (int)id;
-            User activeUser = db.Users.Single(x => x.id_user == id_user);
-
+            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
+            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
 
             try
             {
@@ -228,72 +217,64 @@ namespace Magazyn2019.Controllers
                 customer.id_user = activeUser.id_user;
                 customer.User = activeUser;
                 customer.is_active = true;
-
             }
-            catch (System.FormatException e)
+            catch (Exception)
             {
                 return 0;
             }
-            if (db.Customers.Any(x => x.name == customer.name && x.is_active == true))
+            if (unitOfWork.CustomerRepository.CheckIfExistActiveCustomerByName(customer.name))
             {
                 return 1;
             }
-            if (db.Customers.Any(x => x.code == customer.code && x.is_active == true))
+            if (unitOfWork.CustomerRepository.CheckIfExistActiveCustomerByCode(customer.code))
             {
                 return 2;
             }
 
-            db.Customers.Add(customer);
-            db.SaveChanges();
+            unitOfWork.CustomerRepository.Insert(customer);
+            unitOfWork.Complete();
+
             return -1;
         }
         [HttpPut]
         [Route("Customers/{id}")]
         public int putCustomer(int id, JObject jsonResult)
         {
-            Customer customer = new Customer();
+            Customer customerForEdit = unitOfWork.CustomerRepository.GetById(id);
             try
             {
-                customer.code = (int)jsonResult.SelectToken("code");
-                customer.name = (string)jsonResult.SelectToken("name");
-                customer.street = (string)jsonResult.SelectToken("street");
-                customer.zipCode = (string)jsonResult.SelectToken("zipCode");
-                customer.city = (string)jsonResult.SelectToken("city");
-                customer.type = (int)jsonResult.SelectToken("type");
+                customerForEdit.code = (int)jsonResult.SelectToken("code");
+                customerForEdit.name = (string)jsonResult.SelectToken("name");
+                customerForEdit.street = (string)jsonResult.SelectToken("street");
+                customerForEdit.zipCode = (string)jsonResult.SelectToken("zipCode");
+                customerForEdit.city = (string)jsonResult.SelectToken("city");
+                customerForEdit.type = (int)jsonResult.SelectToken("type");
             }
-            catch (System.FormatException e)
+            catch (Exception)
             {
                 return 0;
             }
 
+            var customerList = unitOfWork.CustomerRepository.GetAll().Where(c => c.is_active == true);
 
-            var customerList = from c in db.Customers
-                                where c.is_active == true
-                                select c;
-
-
+            //check for other objects with the same code and name
             foreach (Customer c in customerList)
             {
                 if (c.id_customer != id)
                 {
-                    if (c.name.Equals(customer.name))
+                    if (c.name.Equals(customerForEdit.name))
                     {
                         return 1;
                     }
-                    if (c.code == customer.code)
+                    if (c.code == customerForEdit.code)
                     {
                         return 2;
                     }
                 }
             }
-            Customer customerEdit = db.Customers.Single(x => x.id_customer == id);
-            customerEdit.code = customer.code;
-            customerEdit.name = customer.name;
-            customerEdit.street = customer.street;
-            customerEdit.zipCode = customer.zipCode;
-            customerEdit.city = customer.city;
-            customerEdit.type = customer.type;
-            db.SaveChanges();
+            unitOfWork.CustomerRepository.Update(customerForEdit);
+            unitOfWork.Complete();
+
             return -1;
         }
         /*Group webapi*/
