@@ -29,10 +29,47 @@ namespace Magazyn2019.Repository
 
             return products;
         }
+        public List<dynamic> GetAllWithNotActiveProducts()
+        {
+            var products = _context
+                          .Products.Select(x =>
+                           new
+                           {
+                               x.id_product,
+                               x.id_group,
+                               x.name,
+                               x.code,
+                               x.description,
+                               x.unit,
+                               x.created,
+                               x.id_user,
+                               group_name = x.Group.name,
+                               x.is_active
+                           });
+
+            return products.ToList<dynamic>();
+        }
         public IQueryable GetActiveProductByID(int id)
         {
             var product = from p in _context.Products
                           where id == p.id_product && p.is_active == true
+                          select new
+                          {
+                              id_group = p.id_group,
+                              code = p.code,
+                              name = p.name,
+                              description = p.description,
+                              unit = p.unit,
+                              created = p.created,
+                              group_name = p.Group.name,
+                              userName = p.User.fullName,
+                          };
+            return product;
+        }
+        public IQueryable GetProductByID(int id)
+        {
+            var product = from p in _context.Products
+                          where id == p.id_product 
                           select new
                           {
                               id_group = p.id_group,

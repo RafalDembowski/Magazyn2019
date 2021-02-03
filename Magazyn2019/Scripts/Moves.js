@@ -47,21 +47,32 @@
 
     $("#btn-close").click(function () {
         closeModal();
+        location.reload();
     });
 
     $(".modal-dismiss").click(function () {
         closeModal();
+        location.reload();
     });
 
     //take information about products in choosen warehouse
     function getNameOfGroupsToSelect() {
-        $.getJSON("/Products", function (data) {
+
+        var idWarehouse = $("#warehouses-filter").val();
+
+        $.getJSON("/AllProductsForWarehouse/" + idWarehouse, function (data) {
             $.each(data, function (key, value) {
                 $("#products-filter-movement").append('<option value="' + value.id_product + '">(' + value.code + ') ' + value.name + '</option > ');
             });
         });
     }
-
+    function getAllActiveProductstoSelect() {
+        $.getJSON("/Products" , function (data) {
+            $.each(data, function (key, value) {
+                $("#products-filter-movement").append('<option value="' + value.id_product + '">(' + value.code + ') ' + value.name + '</option > ');
+            });
+        });
+    }
     function getAllWarehousesToSelect() {
         $.getJSON("/Warehouses", function (data) {
             $.each(data, function (key, value) {
@@ -164,7 +175,7 @@
         var tableMoveData = '';
 
         if (productObject.amount > 0) {
-            $.getJSON("/Products/" + productObject.product, function (data) {
+            $.getJSON("/ProductsWithNoActive/" + productObject.product, function (data) {
                 $("#container-table").css("display", "block");
                 if ($('#moves-table').find('tr#' + productObject.product).find('td:eq(1)').html() === data[0].name) {
                     $('#moves-table').find('tr#' + productObject.product).find('td:eq(5)').html(productObject.amount);
@@ -200,11 +211,12 @@
     }
     //adding new product to the table
     $("#btn-movement-add").click(function () {
+        if ($('#products-filter-movement').is(':enabled'))
+        {
 
         //disabled all filter 
         optionValidation();
         checkIfWarehousesAreDifferent(typeMovement);
-        //$("#error-second").css("display", "none");
 
         if (errorTrue == 0) {
 
@@ -213,7 +225,7 @@
             $("#warehouses-filter").prop("disabled", "disabled");
             $("#warehouses-filter-two").prop("disabled", "disabled");
             $("#customers-filter").prop("disabled", "disabled");
-           
+
 
             var productData = JSON.stringify({
                 "warehouse": $("#warehouses-filter").val(),
@@ -225,6 +237,9 @@
                 displayProductToMove(productData);
             });
         }
+
+        }
+
 
     });
 
@@ -306,10 +321,14 @@
             alert(JSON.stringify(movementData));
         }
         
-
         var movementDataJson = JSON.stringify(movementData);
 
-        alert(movementDataJson.products);
+        if (Array.isArray(movementData.products) && movementData.products.length === 0)
+        {
+            errorTrue = 1;
+            $(".error-text").css("display", "block");
+        }
+
 
         if (errorTrue == 0) {
             $(".error-text").css("display", "none");
@@ -337,6 +356,55 @@
         $("#customer-name").text(customerName);
         $("#warehouse-name").text(warehouseName);
     }
+    //chack which option is selected
+    $('#warehouses-filter').on("change", function () {
+        $("#products-filter-movement option").remove();
+        if (typeMovement == 1) {
+            getAllActiveProductstoSelect();
+        }
+        if (typeMovement == 2) {
+            getNameOfGroupsToSelect();
+        }
+        if (typeMovement == 3) {
+            getNameOfGroupsToSelect();
+        }
+        checkIfSelectsAreChoosen();
+
+    });
+    $('#date-picker').on("change", function () {
+        checkIfSelectsAreChoosen();
+    });
+    $('#customers-filter').on("change", function () {
+        checkIfSelectsAreChoosen();
+    });
+    //check if all select are choosen before add product
+    function checkIfSelectsAreChoosen() {
+        var date = $("#date-picker").val();
+        var warehousesFilter = $("#warehouses-filter").val();
+        if (typeMovement == 1 || typeMovement == 2) {
+
+            var customersFilter = $("#customers-filter").val()
+
+            if (date != "" && warehousesFilter != "" && customersFilter != "") {
+                $("#products-filter-movement").prop("disabled", false);
+            }
+            if (date == "" && warehousesFilter == "" && customersFilter == "" || date == "" || warehousesFilter == "" || customersFilter == "") {
+                $("#products-filter-movement").prop("disabled", "disabled");
+            }
+        }
+        if (typeMovement == 3) {
+
+            var warehousesFilterTwo = $("#warehouses-filter-two").val()
+
+            if (date != "" && warehousesFilter != "" && warehousesFilterTwo != "") {
+                $("#products-filter-movement").prop("disabled", false);
+            }
+            if (date == "" && warehousesFilter == "" && warehousesFilterTwo == "" || date == "" || warehousesFilter == "" || warehousesFilterTwo == "") {
+                $("#products-filter-movement").prop("disabled", "disabled");
+            }
+        }
+
+    }
 
     //script for spinner
     $(function () {
@@ -352,7 +420,8 @@
 
     setCorrectTextToMove();
     getAllWarehousesToSelect();
-    getNameOfGroupsToSelect();
+    //getNameOfGroupsToSelect();
+    checkIfSelectsAreChoosen();
     getAllCustomersToSelect();
 
 

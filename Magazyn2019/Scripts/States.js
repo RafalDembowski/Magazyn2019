@@ -23,7 +23,10 @@
 
     //take information about products in choosen warehouse
     function getNameOfGroupsToSelect() {
-        $.getJSON("Products", function (data) {
+
+        var idWarehouse = $("#warehouses-filter").val();
+
+        $.getJSON("AllProductsForWarehouse/" + idWarehouse , function (data) {
                 $.each(data, function (key, value) {
                     $("#products-filter").append('<option value="' + value.id_product + '">' + value.name + '</option > ');
                 });
@@ -101,6 +104,10 @@
     }
     //chack which option is selected
     $('#warehouses-filter').on("change", function () {
+
+        $("#products-filter option").remove();
+        getNameOfGroupsToSelect();
+
         if (this.value != "") {
             $("#products-filter").prop("disabled", false);
             getProductsInWarehouse();
@@ -125,5 +132,4 @@
     });
 
     getAllWarehousesToSelect();
-    getNameOfGroupsToSelect();
 });

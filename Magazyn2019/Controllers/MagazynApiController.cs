@@ -287,7 +287,7 @@ namespace Magazyn2019.Controllers
                 unitOfWork.Complete();
             }
         }
-    [HttpPost]
+        [HttpPost]
         [Route("Groups")]
         public int postGroups(JObject jsonResult)
         {
@@ -364,8 +364,7 @@ namespace Magazyn2019.Controllers
             return -1;
         }
 
-        /*Product webapi*/
-        
+        /*Product webapi*/        
         [HttpGet]
         [Route("Products")]
         public dynamic getProduct()
@@ -374,6 +373,30 @@ namespace Magazyn2019.Controllers
             return products;
         }
         [HttpGet]
+        [Route("AllProductsForWarehouse/{id}")]
+        public dynamic getAllWithNotActiveProductsForWarehouse(int id)
+        {
+            var inventories = unitOfWork.InventoryRepository.GetAll().Where(i => i.id_warehouse == id && i.amount > 0).ToList();
+            var products = unitOfWork.ProductRepository.GetAllWithNotActiveProducts();
+
+            List<dynamic> product = new List<dynamic>(); 
+            List<dynamic> productsToReturn = new List<dynamic>();
+
+            foreach (Inventory i in inventories)
+            {
+                product = products.Select(row => row).Where(x => x.id_product == i.id_product).ToList();
+                productsToReturn.AddRange(product);
+            }
+
+            return productsToReturn.AsEnumerable();
+        }
+        [HttpGet]
+        [Route("ProductsWithNoActive/{id}")]
+        public dynamic getAllWithNotActiveProducts(int id)
+        {
+            var products = unitOfWork.ProductRepository.GetProductByID(id);
+            return products;
+        }
         [Route("Products/{id}")]
         public dynamic getProductsForId(int id)
         {
@@ -413,7 +436,7 @@ namespace Magazyn2019.Controllers
                 product.created = DateTime.UtcNow;
                 product.id_user = activeUser.id_user;
                 product.User = activeUser;
-                product.Group = db.Groups.Single(x => x.id_group == product.id_group);
+                product.Group = unitOfWork.GroupRepository.GetById(product.id_group);
 
             }
             catch (Exception)
@@ -429,7 +452,7 @@ namespace Magazyn2019.Controllers
                 return 2;
             }
 
-            unitOfWork.ProductRepository.Update(product);
+            unitOfWork.ProductRepository.Insert(product);
             unitOfWork.Complete();
 
             return -1;
