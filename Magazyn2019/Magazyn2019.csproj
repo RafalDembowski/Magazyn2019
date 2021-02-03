@@ -203,7 +203,9 @@
     <Compile Include="Repository\ICustomerRepository.cs" />
     <Compile Include="Repository\IGenericRepository.cs" />
     <Compile Include="Repository\IGroupRepository.cs" />
+    <Compile Include="Repository\IInventoryRepository.cs" />
     <Compile Include="Repository\IMoveRepository.cs" />
+    <Compile Include="Repository\InventoryRepository.cs" />
     <Compile Include="Repository\IProductRepository.cs" />
     <Compile Include="Repository\IUserRepository.cs" />
     <Compile Include="Repository\IWarehouseRepository.cs" />

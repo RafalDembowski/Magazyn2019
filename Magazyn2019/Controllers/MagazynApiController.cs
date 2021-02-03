@@ -488,7 +488,7 @@ namespace Magazyn2019.Controllers
             move.id_warehouse1 = (int)jsonResult.SelectToken("warehouseOne");
             move.time = (DateTime)jsonResult.SelectToken("date");
             move.id_user = idUser;
-            move.number = unitOfWork.MoveRepository.getNumberOfDocuments(move.type);
+            move.number = unitOfWork.MoveRepository.GetNumberOfDocuments(move.type);
             move.WarehouseOne = unitOfWork.WarehouseRepository.GetById(move.id_warehouse1);
             move.User = activeUser;
 
@@ -520,28 +520,14 @@ namespace Magazyn2019.Controllers
         [Route("Inventories")]
         public dynamic getInventories()
         {
-            var invetories = db.Inventories.Select(x =>
-            new { x.id_inventory, x.id_product, x.id_warehouse, x.amount});
-            return invetories;
+            var inventories = unitOfWork.InventoryRepository.GetAllInventories();
+            return inventories;
         }
-        [HttpGet]
+        [HttpGet] 
         [Route("Inventories/{id}")]
         public dynamic getInventoryForId(int id)
         {
-            var inventory = from i in db.Inventories
-                            where id == i.id_warehouse && i.amount > 0
-                            select new 
-                            {
-                                id_inventory = i.id_inventory,
-                                id_product = i.id_product,
-                                id_warehouse = i.id_warehouse,
-                                amount = i.amount,
-                                name = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.name),
-                                code = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.code),
-                                groupName = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.Group.name),
-                                description = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.description),
-                                unit = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.unit),
-                            };
+            var inventory = unitOfWork.InventoryRepository.GetInventoryrByID(id);
             return Json(inventory);
         }
         [HttpPost]
@@ -551,21 +537,8 @@ namespace Magazyn2019.Controllers
             int idWarehouse = (int)jsonResult.SelectToken("idWarehouse");
             int idProduct = (int)jsonResult.SelectToken("idProduct");
 
-            var inventories = from i in db.Inventories
-                              where (idWarehouse == i.id_warehouse)
-                              && (idProduct == i.id_product)
-                              select new
-                              {
-                                  id_inventory = i.id_inventory,
-                                  id_product = i.id_product,
-                                  id_warehouse = i.id_warehouse,
-                                  amount = i.amount,
-                                  name = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.name),
-                                  code = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.code),
-                                  groupName = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.Group.name),
-                                  description = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.description),
-                                  unit = db.Products.Where(x => x.id_product == i.id_product).Select(x => x.unit),
-                              };
+            var inventories = unitOfWork.InventoryRepository.GetAllproductsFromWarehouse(idWarehouse, idProduct);
+
             return Json(inventories);
         }
         /*documents*/
@@ -573,30 +546,17 @@ namespace Magazyn2019.Controllers
         [Route("Document")]
         public dynamic getDocuments()
         {
-            var documents = db.Moves.Select(x =>
-            new
-            {
-                x.id_move,
-                x.type,
-                x.number,
-                x.time,
-                name_WarehouseOne = db.Warehouses.Where(w => w.id_warehouse == x.id_warehouse1).Select(w => w.name),
-                name_WarehouseTwo = db.Warehouses.Where(w => w.id_warehouse == x.id_warehouse2).Select(w => w.name),
-                name_User = db.Users.Where(u => u.id_user == x.id_user).Select(u => u.fullName),
-                name_Customer = db.Customers.Where(c => c.id_customer == x.id_custmer).Select(c => c.name),
-            });
-
+            var documents = unitOfWork.MoveRepository.GetAllDocuments();
             return Json(documents);
         }
         public List<Inventory> inventoryOperations(JObject inventoriesArray, int idWarehouseOne , int idWarehouseTwo, int movementType)
         {
 
             List<Inventory> inventories = new List<Inventory>();
-            Inventory inventory = new Inventory(); ;
+            Inventory inventory = new Inventory(); 
             string producetName;
 
-            var inventoriesList = from i in db.Inventories
-                                  select i;
+            var inventoriesList = unitOfWork.InventoryRepository.GetAll();
             
             foreach (var product in inventoriesArray["products"])
             {
@@ -604,15 +564,14 @@ namespace Magazyn2019.Controllers
                 producetName = (string)product["productName"];
                 inventoryFromJson.id_warehouse = idWarehouseOne;
                 inventoryFromJson.id_product = (int)product["productId"];
-                inventoryFromJson.Product = db.Products.SingleOrDefault(p => p.id_product == inventoryFromJson.id_product);
+                inventoryFromJson.Product = unitOfWork.ProductRepository.GetById(inventoryFromJson.id_product);
                 inventoryFromJson.amount = (int)product["amount"];
                 inventories.Add(inventoryFromJson);
             }
 
             foreach (var i in inventories) {
 
-                var updateInventory = db.Inventories.SingleOrDefault(x => x.id_product == i.id_product && x.id_warehouse == i.id_warehouse);
-
+                var updateInventory = unitOfWork.InventoryRepository.GetInventoryByIdProductAndIdWarehouse(i.id_product, i.id_warehouse);
                
                 if (movementType == 1)
                 {
@@ -635,7 +594,8 @@ namespace Magazyn2019.Controllers
             if (updatedInventory != null)
             {
                 updatedInventory.amount -= inventory.amount;
-                db.SaveChanges();
+                unitOfWork.InventoryRepository.Update(updatedInventory);
+                unitOfWork.Complete();
             }
         }
 
@@ -644,32 +604,37 @@ namespace Magazyn2019.Controllers
             if (updatedInventory != null)
             {
                 updatedInventory.amount += inventory.amount;
-                db.SaveChanges();
+                unitOfWork.InventoryRepository.Update(updatedInventory);
+                unitOfWork.Complete();
             }
             else
             {
-                db.Inventories.Add(inventory);
-                db.SaveChanges();
+                unitOfWork.InventoryRepository.Insert(inventory);
+                unitOfWork.Complete();
             }
         }
 
         public void transferQuantityBetweenInventory(Inventory inventory, Inventory updatedInventory, int idWarehouseTwo)
         {
-            var updatedInventoryTwo = db.Inventories.SingleOrDefault(x => x.id_product == inventory.id_product && x.id_warehouse == idWarehouseTwo);
+            var updatedInventoryTwo = unitOfWork.InventoryRepository.GetInventoryByIdProductAndIdWarehouse(inventory.id_product, idWarehouseTwo);
             
             if(updatedInventoryTwo != null)
             {
                 updatedInventory.amount -= inventory.amount;
                 updatedInventoryTwo.amount += inventory.amount;
-                db.SaveChanges();
+
+                unitOfWork.InventoryRepository.Update(updatedInventory);
+                unitOfWork.InventoryRepository.Update(updatedInventoryTwo);
+                unitOfWork.Complete();
             }
             else
             {
                 updatedInventory.amount -= inventory.amount;
                 //add inventory to second warehouse
                 inventory.id_warehouse = idWarehouseTwo;
-                db.Inventories.Add(inventory);
-                db.SaveChanges();
+                unitOfWork.InventoryRepository.Update(updatedInventory);
+                unitOfWork.InventoryRepository.Insert(inventory);
+                unitOfWork.Complete();
             }
         }
     }

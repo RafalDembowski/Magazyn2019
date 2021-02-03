@@ -9,6 +9,7 @@ namespace Magazyn2019.Repository
 {
     public interface IMoveRepository : IGenericRepository<Move>
     {
-        int getNumberOfDocuments(int typeOfMove);
+        int GetNumberOfDocuments(int typeOfMove);
+        IQueryable GetAllDocuments();
     }
 }
