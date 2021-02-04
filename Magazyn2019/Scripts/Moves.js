@@ -1,5 +1,8 @@
 ﻿$(document).ready(function () {
 
+    //to validation date type 
+    var dateRegex = /^((((0[13578])|([13578])|(1[02]))[\/](([1-9])|([0-2][0-9])|(3[01])))|(((0[469])|([469])|(11))[\/](([1-9])|([0-2][0-9])|(30)))|((2|02)[\/](([1-9])|([0-2][0-9]))))[\/]\d{4}$|^\d{4}$/;
+
     var url = window.location.pathname;
     var typeMovement = url.substring(url.lastIndexOf('/') + 1);
 
@@ -381,14 +384,16 @@
     function checkIfSelectsAreChoosen() {
         var date = $("#date-picker").val();
         var warehousesFilter = $("#warehouses-filter").val();
+
+
         if (typeMovement == 1 || typeMovement == 2) {
 
             var customersFilter = $("#customers-filter").val()
 
-            if (date != "" && warehousesFilter != "" && customersFilter != "") {
+            if (date != "" && dateRegex.test(date) && warehousesFilter != "" && customersFilter != "") {
                 $("#products-filter-movement").prop("disabled", false);
             }
-            if (date == "" && warehousesFilter == "" && customersFilter == "" || date == "" || warehousesFilter == "" || customersFilter == "") {
+            if (date == "" && dateRegex.test(date) == false && warehousesFilter == "" && customersFilter == "" || date == "" || warehousesFilter == "" || customersFilter == "" || dateRegex.test(date) == false) {
                 $("#products-filter-movement").prop("disabled", "disabled");
             }
         }
@@ -420,7 +425,6 @@
 
     setCorrectTextToMove();
     getAllWarehousesToSelect();
-    //getNameOfGroupsToSelect();
     checkIfSelectsAreChoosen();
     getAllCustomersToSelect();
 
