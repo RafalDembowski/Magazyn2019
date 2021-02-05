@@ -71,7 +71,7 @@
 
             $.ajax({
                 type: "GET",
-                url: "Products/" + idEditItem,
+                url: "/Products/" + idEditItem,
                 success: function (data) {
                     $("#productName").val(data[0].name);
                     $("#productCode").val(data[0].code);
@@ -103,7 +103,7 @@
         if (actionType == "new") {
             $.ajax({
                 type: "POST",
-                url: "Products",
+                url: "/Products",
                 data: productData,
                 dataType: "json",
                 contentType: "application/json",
@@ -125,7 +125,7 @@
 
             $.ajax({
                 type: "PUT",
-                url: "Products/" + idEditItem,
+                url: "/Products/" + idEditItem,
                 data: productData,
                 dataType: "json",
                 contentType: "application/json",
@@ -152,7 +152,7 @@
 
         $.ajax({
             type: "GET",
-            url: "Products/" + idInformation,
+            url: "/Products/" + idInformation,
             success: function (data) {
                 var newDateFormat = changeFormatDate(data[0].created);
                 $("#product-name-information").html(data[0].name);
@@ -175,7 +175,7 @@
         $("#button-delete").click(function () {
             $.ajax({
                 type: "DELETE",
-                url: "Products/" + idDelete,
+                url: "/Products/" + idDelete,
                 success: function () {
                     drawTable();
                     closeModal();
@@ -191,7 +191,7 @@
     //take information about name of groups
     function getNameOfGroups() {
         resetOptionInSelect();
-        $.getJSON("Groups", function (data) {
+        $.getJSON("/Groups", function (data) {
             $.each(data, function (key, value) {
                 $('#groupType').append('<option value="' + value.id_group + '">' + value.name + '</option > ');
             });
@@ -206,7 +206,7 @@
 
         $("#product-table > tbody").empty();
 
-        $.getJSON("Products", function (data) {
+        $.getJSON("/Products", function (data) {
             $.each(data, function (key, value) {
                 productData += '<tr>';
                 productData += '<td>' + id++ + '</td>';

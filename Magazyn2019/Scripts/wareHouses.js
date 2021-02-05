@@ -56,7 +56,7 @@
 
             $.ajax({
                 type: "GET",
-                url: "Warehouses/" + idEditItem,
+                url: "/Warehouses/" + idEditItem,
                 success: function (data) {
                     $("#warehouseName").val(data[0].name);
                     $("#warehouseCode").val(data[0].code);
@@ -83,7 +83,7 @@
         if (actionType == "new") {
             $.ajax({
                 type: "POST",
-                url: "Warehouses",
+                url: "/Warehouses",
                 data: warehouseData,
                 dataType: "json",
                 contentType: "application/json",
@@ -102,7 +102,7 @@
 
             $.ajax({
                 type: "PUT",
-                url: "Warehouses/" + idEditItem,
+                url: "/Warehouses/" + idEditItem,
                 data: warehouseData,
                 dataType: "json",
                 contentType: "application/json",
@@ -129,7 +129,7 @@
 
         $.ajax({
             type: "GET",
-            url: "Warehouses/" + idInformation,
+            url: "/Warehouses/" + idInformation,
             success: function (data) {
                 var newDateFormat = changeFormatDate(data[0].created);
                 $("#warehouse-name-information").html(data[0].name);
@@ -152,7 +152,7 @@
         $("#button-delete").click(function () {
         $.ajax({
             type: "DELETE",
-            url: "Warehouses/" + idDelete,
+            url: "/Warehouses/" + idDelete,
             success: function () {
                 drawTable();
                 closeModal();
@@ -174,7 +174,7 @@
 
         $("#warehouse-table > tbody").empty();
 
-        $.getJSON("Warehouses", function (data) {
+        $.getJSON("/Warehouses", function (data) {
             $.each(data, function (key, value) {
                 warehouseData += '<tr>';
                 warehouseData += '<td>' + id++ + '</td>';

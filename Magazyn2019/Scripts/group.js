@@ -56,7 +56,7 @@
 
             $.ajax({
                 type: "GET",
-                url: "Groups/" + idEditItem,
+                url: "/Groups/" + idEditItem,
                 success: function (data) {
                     $("#groupName").val(data[0].name);
                     $("#groupCode").val(data[0].code);
@@ -82,7 +82,7 @@
         if (actionType == "new") {
             $.ajax({
                 type: "POST",
-                url: "Groups",
+                url: "/Groups",
                 data: groupData,
                 dataType: "json",
                 contentType: "application/json",
@@ -101,7 +101,7 @@
 
             $.ajax({
                 type: "PUT",
-                url: "Groups/" + idEditItem,
+                url: "/Groups/" + idEditItem,
                 data: groupData,
                 dataType: "json",
                 contentType: "application/json",
@@ -128,7 +128,7 @@
 
         $.ajax({
             type: "GET",
-            url: "Groups/" + idInformation,
+            url: "/Groups/" + idInformation,
             success: function (data) {
                 var newDateFormat = changeFormatDate(data[0].created);
                 $("#group-name-information").html(data[0].name);
@@ -151,7 +151,7 @@
         $("#button-delete").click(function () {
             $.ajax({
                 type: "DELETE",
-                url: "Groups/" + idDelete,
+                url: "/Groups/" + idDelete,
                 success: function () {
                     drawTable();
                     closeModal();
@@ -173,7 +173,7 @@
 
         $("#group-table > tbody").empty();
 
-        $.getJSON("Groups", function (data) {
+        $.getJSON("/Groups", function (data) {
             $.each(data, function (key, value) {
                 groupData += '<tr>';
                 groupData += '<td>' + id++ + '</td>';

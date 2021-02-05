@@ -1,0 +1,30 @@
+﻿@model Magazyn2019.Models.User
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="login-site">
+    <div>
+        <img src="../Content/img/logo.png" height="120" style="display: block; margin-left: auto; margin-right: auto ">
+        <div class="login-modal">
+            @using (Html.BeginForm("Login", "Home", FormMethod.Post))
+            {
+                <div class="login-form">
+                    @if(ViewBag.Error == true)
+                    {
+                       <div id="login-form-error">Nie poprawne dane</div>
+                    }
+
+                    <label for="uname">Użytkownik</label>
+                    @Html.TextBoxFor(u => u.userName, "")
+
+                    <label for="psw">Hasło</label>
+                    @Html.PasswordFor(u => u.password)
+
+                    <button type="submit" id="loginBtn">Zaloguj się</button>
+
+                </div>
+            }
+            </div>
+    </div>
+</div>

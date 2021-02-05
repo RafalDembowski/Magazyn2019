@@ -33,12 +33,12 @@
         </header>
         <ul>
             <li><a id="warehouse-menu" href="@Url.Action("Index","HomePage")"><i class="fas fa-warehouse"></i>MAGAZYNY</a></li>
-            <li><a id="customer-menu"  href="@Url.Action("Index","Customer")"><i class="fas fa-user mr-2"></i>KONTRAHENCHI</a></li>
+            <li><a id="customer-menu" href="@Url.Action("Index","Customer")"><i class="fas fa-user mr-2"></i>KONTRAHENCHI</a></li>
             <li><a id="group-menu" href="@Url.Action("Index","Group")"><i class="fas fa-folder mr-2"></i>GRUPY</a></li>
             <li><a id="product-menu" href="@Url.Action("Index","Product")"><i class="fas fa-shopping-cart mr-2"></i>PRODUKTY</a></li>
             <li><a id="states-menu" href="@Url.Action("Index","States")"><i class="fas fa-list mr-2"></i>STANY</a></li>
             <li><a id="documents-menu" href="@Url.Action("Index","Documents")"><i class="fas fa-file mr-2"></i>DOKUMENTY</a></li>
-            <li><a id="logoutBtn">WYLOGUJ SIĘ<i class="fa fa-power-off ml-2"></i></a></li>
+            <li><a href="@Url.Action("Logout","Home")">WYLOGUJ SIĘ<i class="fa fa-power-off ml-2"></i></a></li>
         </ul>
         <section class="main-content">
             @RenderBody()

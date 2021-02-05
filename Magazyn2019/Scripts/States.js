@@ -26,7 +26,7 @@
 
         var idWarehouse = $("#warehouses-filter").val();
 
-        $.getJSON("AllProductsForWarehouse/" + idWarehouse , function (data) {
+        $.getJSON("/AllProductsForWarehouse/" + idWarehouse , function (data) {
                 $.each(data, function (key, value) {
                     $("#products-filter").append('<option value="' + value.id_product + '">' + value.name + '</option > ');
                 });
@@ -34,7 +34,7 @@
     }
  
     function getAllWarehousesToSelect() {
-        $.getJSON("Warehouses", function (data) {
+        $.getJSON("/Warehouses", function (data) {
             $.each(data, function (key, value) {
                 $('#warehouses-filter').append('<option value="' + value.id_warehouse + '">' + value.name + '</option > ');
             });
@@ -47,7 +47,7 @@
         var idWarehouse = $("#warehouses-filter").val();
         var id = 1;
         var numberProductArray = 0;
-        $.getJSON("Inventories/" + idWarehouse, function (data) {
+        $.getJSON("/Inventories/" + idWarehouse, function (data) {
             if (data != 0) {
                 $.each(data, function (key, value) {
 
@@ -78,7 +78,7 @@
         var inventoryDataJson = JSON.stringify(inventoryData);
         $.ajax({
             type: "POST",
-            url: "Inventories",
+            url: "/Inventories",
             data: inventoryDataJson,
             dataType: "json",
             contentType: "application/json",

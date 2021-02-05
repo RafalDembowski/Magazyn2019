@@ -2,6 +2,10 @@
     font-family: 'Open Sans';
     margin: 0;
 }
+#background-img-layout {
+    background: url(/Content/Img/slide.jpg) no-repeat center center fixed;
+    background-position: 50% 65%;
+}
 /*login page*/
 .login-site {
     height: 95vh;
@@ -49,7 +53,6 @@
 }
 #login-form-error {
     text-align:center;
-    display: none;
     margin-bottom: 10px;
     border: #de8500;
     background-color: #ff3333;

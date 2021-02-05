@@ -21,41 +21,6 @@ namespace Magazyn2019.Controllers
         {
             unitOfWork = new UnitOfWork( new Magazyn2019Entities());
         }
-
-        [HttpPost]
-        [Route("login")]
-        public int CheckLogin(JObject jsonResult)
-        {
-            string login_txt = (string)jsonResult.SelectToken("login_txt");
-            string password_txt = (string)jsonResult.SelectToken("password_txt");
-
-            var loginResult = db.Users.Where(x => login_txt == x.userName && password_txt == x.password).FirstOrDefault();
-            if (loginResult != null)
-            {
-              getActiveUser(login_txt);
-              return 1;
-            }
-            else
-            {
-              return 0;
-            }
-        }
-        [HttpPost]
-        [Route("logout")]
-        public void Logout()
-        {
-            HttpContext.Current.Session["ActiveUserId"] = null;
-        }
-        public void getActiveUser(string login_txt)
-        {
-
-            User activeUser = db.Users.Single(x => x.userName == login_txt);
-
-            HttpContext.Current.Session["ActiveUserId"] = activeUser.id_user;
-            HttpContext.Current.Session["ActiveUserFullName"] = activeUser.fullName;
-            HttpContext.Current.Session["ActiveUserPosition"] = activeUser.position;
-            
-        }
         [HttpGet]
         [Route("Warehouses")]
         public dynamic getWarehouses()

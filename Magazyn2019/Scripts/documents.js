@@ -29,7 +29,7 @@
 
         $("#document-table > tbody").empty();
 
-        $.getJSON("Document", function (data) {
+        $.getJSON("/Document", function (data) {
             $.each(data, function (key, value) {
                 documentsData += '<tr>';
                 documentsData += '<td>' + id++ + '</td>';

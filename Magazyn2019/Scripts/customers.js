@@ -69,7 +69,7 @@
             
             $.ajax({
                 type: "GET",
-                url: "Customers/" + idEditItem,
+                url: "/Customers/" + idEditItem,
                 success: function (data) {
                     $("#customerName").val(data[0].name);
                     $("#customerCode").val(data[0].code);
@@ -102,7 +102,7 @@
         if (actionType == "new") {
             $.ajax({
                 type: "POST",
-                url: "Customers",
+                url: "/Customers",
                 data: customerData,
                 dataType: "json",
                 contentType: "application/json",
@@ -121,7 +121,7 @@
 
             $.ajax({
                 type: "PUT",
-                url: "Customers/" + idEditItem,
+                url: "/Customers/" + idEditItem,
                 data: customerData,
                 dataType: "json",
                 contentType: "application/json",
@@ -149,7 +149,7 @@
 
         $.ajax({
             type: "GET",
-            url: "Customers/" + idInformation,
+            url: "/Customers/" + idInformation,
             success: function (data) {
                 var newDateFormat = changeFormatDate(data[0].created);
                 $("#customer-name-information").html(data[0].name);
@@ -173,7 +173,7 @@
         $("#button-delete").click(function () {
             $.ajax({
                 type: "DELETE",
-                url: "Customers/" + idDelete,
+                url: "/Customers/" + idDelete,
                 success: function () {
                     drawTable();
                     closeModal();
@@ -195,7 +195,7 @@
 
         $("#customer-table > tbody").empty();
 
-        $.getJSON("Customers", function (data) {
+        $.getJSON("/Customers", function (data) {
             $.each(data, function (key, value) {
                 customerData += '<tr>';
                 customerData += '<td>' + id++ + '</td>';
