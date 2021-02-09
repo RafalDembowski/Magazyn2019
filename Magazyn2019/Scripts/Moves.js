@@ -21,6 +21,9 @@
             $('#name-of-movement').text('Nowe przesunięcie');
             $('#btn-movement').text('nowe przesunięcie');
         }
+        if (typeMovement > 3 || typeMovement <= 0) {
+            parent.history.back();
+        }
     }
 
     var productAmount = 0;
@@ -132,6 +135,7 @@
                                 else {
                                     $(".error-text-second").css("display", "none");
                                     errorTrue = 0;
+                                    displayProductToMove(productDataProbne);
                                 }
                             }
                     }
@@ -177,9 +181,13 @@
         var productObject = JSON.parse(productData);
         var tableMoveData = '';
 
+
+
         if (productObject.amount > 0) {
             $.getJSON("/ProductsWithNoActive/" + productObject.product, function (data) {
+
                 $("#container-table").css("display", "block");
+
                 if ($('#moves-table').find('tr#' + productObject.product).find('td:eq(1)').html() === data[0].name) {
                     $('#moves-table').find('tr#' + productObject.product).find('td:eq(5)').html(productObject.amount);
                 } else {
@@ -228,6 +236,7 @@
             $("#warehouses-filter").prop("disabled", "disabled");
             $("#warehouses-filter-two").prop("disabled", "disabled");
             $("#customers-filter").prop("disabled", "disabled");
+            
 
 
             var productData = JSON.stringify({
@@ -236,9 +245,11 @@
                 "amount": $("#spinner").val(),
             })
 
+           
             $.when(checkProductAmount(productData)).done(function () {
-                displayProductToMove(productData);
+
             });
+            
         }
 
         }
@@ -321,7 +332,6 @@
 
             var warehouseTwo = $("#warehouses-filter-two").val();
             movementData['customer'] = warehouseTwo;
-            alert(JSON.stringify(movementData));
         }
         
         var movementDataJson = JSON.stringify(movementData);
@@ -342,8 +352,13 @@
                 dataType: "json",
                 contentType: "application/json",
                 success: function (data) {
-                    setInformationAboutMoveToModal();
-                    openModal();
+                    if (data == 3) {
+                        location.reload();
+                    }
+                    else {
+                        setInformationAboutMoveToModal();
+                        openModal();
+                    }
                 }
             })
             movementData = null;
@@ -354,8 +369,13 @@
 
 
     function setInformationAboutMoveToModal() {
-        var customerName = $("#warehouses-filter").text();
-        var warehouseName = $("#customers-filter").text();
+        var customerName = $("#warehouses-filter option:selected").html();
+        if (typeMovement != 3) {
+            var warehouseName = $("#customers-filter option:selected").html();
+        }
+        else {
+            var warehouseName = $("#warehouses-filter-two option:selected").html();
+        }
         $("#customer-name").text(customerName);
         $("#warehouse-name").text(warehouseName);
     }

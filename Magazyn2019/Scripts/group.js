@@ -27,6 +27,14 @@
         $(".error-text").css("display", "none");
         resetForm();
     }
+    function displayTable() {
+        $("#group-table").css("display", "table");
+        $("#no-items-information").css("display", "none");
+    }
+    function removeTable() {
+        $("#group-table").css("display", "none");
+        $("#no-items-information").css("display", "block");
+    }
     function changeFormatDate(dateString) {
         var newDateFormat = dateString.replace("T", "  ");
         return newDateFormat.substr(0, 17);
@@ -90,7 +98,11 @@
                     if (data == -1) {
                         closeModal();
                         drawTable();
-                    } else {
+                    }
+                    if (data == 3) {
+                        location.reload();
+                    }
+                    if (data >= 0 && data < 3) {
                         $(".error-text").css("display", "block");
                         $(".error-text").html(errorText[data]);
                     }
@@ -109,7 +121,11 @@
                     if (data == -1) {
                         closeModal();
                         drawTable();
-                    } else {
+                    }
+                    if (data == 3) {
+                        location.reload();
+                    }
+                    if (data >= 0 && data < 3) {
                         $(".error-text").css("display", "block");
                         $(".error-text").html(errorText[data]);
                     }
@@ -174,17 +190,24 @@
         $("#group-table > tbody").empty();
 
         $.getJSON("/Groups", function (data) {
-            $.each(data, function (key, value) {
-                groupData += '<tr>';
-                groupData += '<td>' + id++ + '</td>';
-                groupData += '<td> <a href="#" class="item-name" data-id="' + value.id_group + '">' + value.name + '</a></td>';
-                groupData += '<td>' + value.code + '</td>';
-                groupData += '<td class="item-description">' + value.description + '</td>';
-                groupData += '<td><button class="btn-modal" id="button-table-edit" data-type="edit" data-id="' + value.id_group + '">Edycja</button> <button class="button-table-delete"data-id="' + value.id_group + '">Usuń</button></td>';
-                groupData += '</tr>';
-                codeOfLastGroup = value.code;
-            });
-            $("#group-table").append(groupData);
+            if (data != 0) {
+                $.each(data, function (key, value) {
+                    groupData += '<tr>';
+                    groupData += '<td>' + id++ + '</td>';
+                    groupData += '<td> <a href="#" class="item-name" data-id="' + value.id_group + '">' + value.name + '</a></td>';
+                    groupData += '<td>' + value.code + '</td>';
+                    groupData += '<td class="item-description">' + value.description + '</td>';
+                    groupData += '<td><button class="btn-modal" id="button-table-edit" data-type="edit" data-id="' + value.id_group + '">Edycja</button> <button class="button-table-delete"data-id="' + value.id_group + '">Usuń</button></td>';
+                    groupData += '</tr>';
+                    codeOfLastGroup = value.code;
+                });
+                $("#group-table").append(groupData);
+                displayTable();
+            }
+            else {
+                removeTable();
+            }
+
         });
     }
 

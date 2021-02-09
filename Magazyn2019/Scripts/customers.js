@@ -43,6 +43,14 @@
         var newDateFormat = dateString.replace("T", "  ");
         return newDateFormat.substr(0, 17);
     }
+    function displayTable() {
+        $("#customer-table").css("display", "table");
+        $("#no-items-information").css("display", "none");
+    }
+    function removeTable() {
+        $("#customer-table").css("display", "none");
+        $("#no-items-information").css("display", "block");
+    }
     $("#customer-menu").css("background-color", "#eee");
     $("#customer-menu").css("color", "#1d2127");
 
@@ -110,7 +118,11 @@
                     if (data == -1) {
                         closeModal();
                         drawTable();
-                    } else {
+                    }
+                    if (data == 3) {
+                        location.reload();
+                    }
+                    if (data >= 0 && data < 3) {
                         $(".error-text").css("display", "block");
                         $(".error-text").html(errorText[data]);
                     }
@@ -129,7 +141,11 @@
                     if (data == -1) {
                         closeModal();
                         drawTable();
-                    } else {
+                    }
+                    if (data == 3) {
+                        location.reload();
+                    }
+                    if (data >= 0 && data < 3) {
                         $(".error-text").css("display", "block");
                         $(".error-text").html(errorText[data]);
                     }
@@ -196,18 +212,24 @@
         $("#customer-table > tbody").empty();
 
         $.getJSON("/Customers", function (data) {
-            $.each(data, function (key, value) {
-                customerData += '<tr>';
-                customerData += '<td>' + id++ + '</td>';
-                customerData += '<td> <a href="#" class="item-name" data-id="' + value.id_customer + '">' + value.name + '</a></td>';
-                customerData += '<td>' + value.street + '</br>' + value.zipCode + ' ' + value.city + '</td>';
-                customerData += '<td>' + value.code + '</td>';
-                customerData += '<td>' + typeOfCustomer[value.type] + '</td>';
-                customerData += '<td><button class="btn-modal" id="button-table-edit" data-type="edit" data-id="' + value.id_customer + '">Edycja</button> <button class="button-table-delete"data-id="' + value.id_customer + '">Usuń</button></td>';
-                customerData += '</tr>';
-                codeOfLastCustomer = value.code;
-            });
-            $("#customer-table").append(customerData);
+            if (data != 0) {
+                $.each(data, function (key, value) {
+                    customerData += '<tr>';
+                    customerData += '<td>' + id++ + '</td>';
+                    customerData += '<td> <a href="#" class="item-name" data-id="' + value.id_customer + '">' + value.name + '</a></td>';
+                    customerData += '<td>' + value.street + '</br>' + value.zipCode + ' ' + value.city + '</td>';
+                    customerData += '<td>' + value.code + '</td>';
+                    customerData += '<td>' + typeOfCustomer[value.type] + '</td>';
+                    customerData += '<td><button class="btn-modal" id="button-table-edit" data-type="edit" data-id="' + value.id_customer + '">Edycja</button> <button class="button-table-delete"data-id="' + value.id_customer + '">Usuń</button></td>';
+                    customerData += '</tr>';
+                    codeOfLastCustomer = value.code;
+                });
+                $("#customer-table").append(customerData);
+                displayTable();
+            } else {
+                removeTable();
+            }
+
         });
     }
 

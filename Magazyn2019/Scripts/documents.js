@@ -20,7 +20,14 @@
         var newDateFormat = dateString.replace("T", "  ");
         return newDateFormat.substr(0, 10);
     }
-
+    function displayTable() {
+        $("#document-table").css("display", "table");
+        $("#no-items-information").css("display", "none");
+    }
+    function removeTable() {
+        $("#document-table").css("display", "none");
+        $("#no-items-information").css("display", "block");
+    }
     //draw table with information about documents
         function drawTable() {
 
@@ -29,21 +36,28 @@
 
         $("#document-table > tbody").empty();
 
-        $.getJSON("/Document", function (data) {
-            $.each(data, function (key, value) {
-                documentsData += '<tr>';
-                documentsData += '<td>' + id++ + '</td>';
-                documentsData += '<td>' + changeFormatDate(value.time) + '</td>';
-                documentsData += '<td>' + moveTypeArray[value.type] + '</td>';
-                documentsData += '<td>' + value.name_Customer + '</td>';
-                documentsData += '<td>' + value.name_WarehouseOne + '</td>';
-                documentsData += '<td>' + value.name_WarehouseTwo + '</td>';
-                documentsData += '<td>' + value.name_User + '</td>';
-                documentsData += '<td>' + pdfTypeArray[value.type] + '/' +value.number + '</td>';
-                documentsData += '<td> <a href="/pdf/' + pdfTypeArray[value.type] + '/' + value.number + '.pdf"><img src="/Content/Img/pdf.png" style="width:26px;"></a> </td>';
-                documentsData += '</tr>';
-            });
-            $("#document-table").append(documentsData);
+            $.getJSON("/Document", function (data) {
+                if (data != 0) {
+                    $.each(data, function (key, value) {
+                        documentsData += '<tr>';
+                        documentsData += '<td>' + id++ + '</td>';
+                        documentsData += '<td>' + changeFormatDate(value.time) + '</td>';
+                        documentsData += '<td>' + moveTypeArray[value.type] + '</td>';
+                        documentsData += '<td>' + value.name_Customer + '</td>';
+                        documentsData += '<td>' + value.name_WarehouseOne + '</td>';
+                        documentsData += '<td>' + value.name_WarehouseTwo + '</td>';
+                        documentsData += '<td>' + value.name_User + '</td>';
+                        documentsData += '<td>' + pdfTypeArray[value.type] + '/' + value.number + '</td>';
+                        documentsData += '<td> <a href="/pdf/' + pdfTypeArray[value.type] + '/' + value.number + '.pdf"><img src="/Content/Img/pdf.png" style="width:26px;"></a> </td>';
+                        documentsData += '</tr>';
+                    });
+                    $("#document-table").append(documentsData);
+                    displayTable();
+                }
+                else {
+                    removeTable();
+                }
+
         });
     }
 

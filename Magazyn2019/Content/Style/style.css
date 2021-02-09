@@ -6,6 +6,9 @@
     background: url(/Content/Img/slide.jpg) no-repeat center center fixed;
     background-position: 50% 65%;
 }
+#customer-table, #document-table, #group-table, #warehouse-table, #product-table {
+    display: none;
+}
 /*login page*/
 .login-site {
     height: 95vh;

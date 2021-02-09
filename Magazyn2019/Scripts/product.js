@@ -42,6 +42,14 @@
         $(".error-text").css("display", "none");
         resetForm();
     }
+    function displayTable() {
+        $("#product-table").css("display", "table");
+        $("#no-items-information").css("display", "none");
+    }
+    function removeTable() {
+        $("#product-table").css("display", "none");
+        $("#no-items-information").css("display", "block");
+    }
     function changeFormatDate(dateString) {
         var newDateFormat = dateString.replace("T", "  ");
         return newDateFormat.substr(0, 17);
@@ -75,9 +83,9 @@
                 success: function (data) {
                     $("#productName").val(data[0].name);
                     $("#productCode").val(data[0].code);
-                    $("#groupType").val(data[0].groupType);
-                    $("#unitType").val(data[0].unitType);
-                    $("#productpDescription").val(data[0].description);
+                    $("#groupType").val(data[0].group_name);
+                    $("#unitType").val(data[0].unit);
+                    $("#productDescription").val(data[0].description);
                 }
             });
         }
@@ -98,8 +106,6 @@
             "description": $("#productDescription").val(),
         });
 
-        alert(productData);
-
         if (actionType == "new") {
             $.ajax({
                 type: "POST",
@@ -108,13 +114,14 @@
                 dataType: "json",
                 contentType: "application/json",
                 success: function (data) {
-                    alert(productData);
                     if (data == -1) {
-                        alert(productData);
                         closeModal();
                         drawTable();
-                    } else {
-                        alert(productData);
+                    }
+                    if (data == 3) {
+                        location.reload();
+                    }
+                    if (data >= 0 && data < 3) {
                         $(".error-text").css("display", "block");
                         $(".error-text").html(errorText[data]);
                     }
@@ -122,7 +129,6 @@
             });
 
         } else if (actionType == "edit") {
-
             $.ajax({
                 type: "PUT",
                 url: "/Products/" + idEditItem,
@@ -133,7 +139,11 @@
                     if (data == -1) {
                         closeModal();
                         drawTable();
-                    } else {
+                    } 
+                    if (data == 3) {
+                        location.reload();
+                    }
+                    if (data >= 0 && data < 3) {
                         $(".error-text").css("display", "block");
                         $(".error-text").html(errorText[data]);
                     }
@@ -201,26 +211,30 @@
 
     function drawTable() {
         var id = 1;
-        var codeOfLastProduct = '';
-        var productData;
+        var productData = '';
 
         $("#product-table > tbody").empty();
 
         $.getJSON("/Products", function (data) {
-            $.each(data, function (key, value) {
-                productData += '<tr>';
-                productData += '<td>' + id++ + '</td>';
-                productData += '<td> <a href="#" class="item-name" data-id="' + value.id_product + '">' + value.name + '</a></td>';
-                productData += '<td>' + value.code + '</td>';
-                productData += '<td>' + value.group_name + '</td>';
-                productData += '<td>' + unitArray[value.unit] + '</td>';
-                productData += '<td class="item-description">' + value.description + '</td>';
-                productData += '<td><button class="btn-modal" id="button-table-edit" data-type="edit" data-id="' + value.id_product + '">Edycja</button> <button class="button-table-delete"data-id="' + value.id_product + '">Usuń</button></td>';
-                productData += '</tr>';
-                codeOfLastProduct = value.code;
-                codeOfLastProduct++;
-            });
-            $("#product-table").append(productData);
+            if (data != 0) {
+                $.each(data, function (key, value) {
+                    productData += '<tr>';
+                    productData += '<td>' + id++ + '</td>';
+                    productData += '<td> <a href="#" class="item-name" data-id="' + value.id_product + '">' + value.name + '</a></td>';
+                    productData += '<td>' + value.code + '</td>';
+                    productData += '<td>' + value.group_name + '</td>';
+                    productData += '<td>' + unitArray[value.unit] + '</td>';
+                    productData += '<td class="item-description">' + value.description + '</td>';
+                    productData += '<td><button class="btn-modal" id="button-table-edit" data-type="edit" data-id="' + value.id_product + '">Edycja</button> <button class="button-table-delete"data-id="' + value.id_product + '">Usuń</button></td>';
+                    productData += '</tr>';
+                    codeOfLastProduct = value.code;
+                });
+                $("#product-table").append(productData);
+                displayTable();
+            }
+            else {
+                removeTable();
+            }
         });
     }
 

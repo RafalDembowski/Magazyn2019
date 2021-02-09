@@ -27,6 +27,15 @@
         $(".error-text").css("display", "none");
         resetForm();
     }
+    function displayTable() {
+        $("#warehouse-table").css("display", "table");
+        $("#no-items-information").css("display", "none");
+    }
+
+    function removeTable() {
+        $("#warehouse-table").css("display", "none");
+        $("#no-items-information").css("display", "block");
+    }
     function changeFormatDate(dateString) {
         var newDateFormat = dateString.replace("T", "  ");
         return newDateFormat.substr(0, 17);
@@ -68,7 +77,6 @@
     
     $(".modal-dismiss").click(function () {
         closeModal();
-        resetForm();
     });
 
     $(document).on("click", "#btn-warehouse", function () {
@@ -88,10 +96,18 @@
                 dataType: "json",
                 contentType: "application/json",
                 success: function (data) {
+
                     if (data == -1) {
                         closeModal();
                         drawTable();
-                    } else {
+                    }
+                    
+                    if (data == 3) {
+                        location.reload();
+                    }
+                    
+                    if (data >= 0 && data < 3)
+                    {
                         $(".error-text").css("display", "block");
                         $(".error-text").html(errorText[data]);
                     }
@@ -110,7 +126,13 @@
                     if (data == -1) {
                         closeModal();
                         drawTable();
-                    } else {
+                    }
+                    
+                    if (data == 3) {
+                        location.reload();
+                    }
+
+                    if (data >= 0 && data < 3) {
                         $(".error-text").css("display", "block");
                         $(".error-text").html(errorText[data]);
                     }
@@ -175,17 +197,24 @@
         $("#warehouse-table > tbody").empty();
 
         $.getJSON("/Warehouses", function (data) {
-            $.each(data, function (key, value) {
-                warehouseData += '<tr>';
-                warehouseData += '<td>' + id++ + '</td>';
-                warehouseData += '<td> <a href="#" class="item-name" data-id="'+value.id_warehouse+'">' + value.name + '</a></td>';
-                warehouseData += '<td>' + value.code + '</td>';
-                warehouseData += '<td class="item-description">' + value.description + '</td>';
-                warehouseData += '<td><button class="btn-modal" id="button-table-edit" data-type="edit" data-id="' + value.id_warehouse + '">Edycja</button> <button class="button-table-delete"data-id="' + value.id_warehouse +'">Usuń</button></td>';
-                warehouseData += '</tr>';
-                codeOfLastWarehouse = value.code;
-            });
-            $("#warehouse-table").append(warehouseData);
+            if (data != 0) {
+                $.each(data, function (key, value) {
+                    warehouseData += '<tr>';
+                    warehouseData += '<td>' + id++ + '</td>';
+                    warehouseData += '<td> <a href="#" class="item-name" data-id="' + value.id_warehouse + '">' + value.name + '</a></td>';
+                    warehouseData += '<td>' + value.code + '</td>';
+                    warehouseData += '<td class="item-description">' + value.description + '</td>';
+                    warehouseData += '<td><button class="btn-modal" id="button-table-edit" data-type="edit" data-id="' + value.id_warehouse + '">Edycja</button> <button class="button-table-delete"data-id="' + value.id_warehouse + '">Usuń</button></td>';
+                    warehouseData += '</tr>';
+                    codeOfLastWarehouse = value.code;
+                });
+                $("#warehouse-table").append(warehouseData);
+                displayTable();
+            }
+            else {
+                removeTable();
+            }
+
         });
     }
 

@@ -10,16 +10,27 @@ using Magazyn2019.UnitOfWorks;
 
 namespace Magazyn2019.Controllers
 {
-    //zamienic pobieranie uzytkowniak w jedna funkcje, bo jest zbyt wiele razy wywoływana
     [RoutePrefix("")]
     public class MagazynApiController : ApiController
     {
-        private Magazyn2019Entities db = new Magazyn2019Entities();
-
         private UnitOfWork unitOfWork;
         public MagazynApiController()
         {
             unitOfWork = new UnitOfWork( new Magazyn2019Entities());
+        }
+        public User getActiveUser()
+        {
+            try
+            {
+                int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
+                User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
+                return activeUser;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
         }
         [HttpGet]
         [Route("Warehouses")]
@@ -39,8 +50,15 @@ namespace Magazyn2019.Controllers
         [Route("Warehouses/{id}")]
         public void deleteWarehouse(int id)
         {
-            unitOfWork.WarehouseRepository.Delete(id);
-            unitOfWork.Complete();
+            try
+            {
+                unitOfWork.WarehouseRepository.Delete(id);
+                unitOfWork.Complete();
+            }
+            catch (Exception)
+            {
+
+            }
         }
         [HttpPost]
         [Route("Warehouses")]
@@ -48,9 +66,12 @@ namespace Magazyn2019.Controllers
         {
 
             Warehouse warehouse = new Warehouse();
-
-            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
-            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
+            User activeUser = getActiveUser();
+            
+            if(activeUser == null)
+            {
+                return 3;
+            }
 
             try
             {
@@ -65,6 +86,10 @@ namespace Magazyn2019.Controllers
             {
                 return 0;
             }
+            if (String.IsNullOrEmpty(warehouse.name) || String.IsNullOrEmpty(warehouse.description))
+            {
+                return 0;
+            }
             if (unitOfWork.WarehouseRepository.CheckIfExistWarehouseByName(warehouse.name))
             {
                 return 1;
@@ -74,16 +99,31 @@ namespace Magazyn2019.Controllers
                 return 2;
             }
 
-            unitOfWork.WarehouseRepository.Insert(warehouse);
-            unitOfWork.Complete();
-
-            return -1;
+            try
+            {
+                unitOfWork.WarehouseRepository.Insert(warehouse);
+                unitOfWork.Complete();
+                return -1;
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
+            
         }
         [HttpPut]
         [Route("Warehouses/{id}")]
         public int putWarehouse (int id, JObject jsonResult)
         {
             Warehouse warehouseForEdit = unitOfWork.WarehouseRepository.GetById(id);
+
+            User activeUser = getActiveUser();
+
+            if (activeUser == null)
+            {
+                return 3;
+            }
+
             try
             {
                 warehouseForEdit.code = (int)jsonResult.SelectToken("code");
@@ -91,6 +131,11 @@ namespace Magazyn2019.Controllers
                 warehouseForEdit.description = (string)jsonResult.SelectToken("description");;
             }
             catch (Exception)
+            {
+                return 0;
+            }
+
+            if (String.IsNullOrEmpty(warehouseForEdit.name) || String.IsNullOrEmpty(warehouseForEdit.description))
             {
                 return 0;
             }
@@ -113,10 +158,19 @@ namespace Magazyn2019.Controllers
                     }
                 }
             }
-            unitOfWork.WarehouseRepository.Update(warehouseForEdit);
-            unitOfWork.Complete();
 
-            return -1;
+            try
+            {
+                unitOfWork.WarehouseRepository.Update(warehouseForEdit);
+                unitOfWork.Complete();
+
+                return -1;
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
+
         }
         /*Customer webapi*/
         [HttpGet]
@@ -140,9 +194,16 @@ namespace Magazyn2019.Controllers
             Customer customer = unitOfWork.CustomerRepository.GetById(id);
             if (customer != null)
             {
-                customer.is_active = false;
-                unitOfWork.CustomerRepository.Update(customer);
-                unitOfWork.Complete();
+                try
+                {
+                    customer.is_active = false;
+                    unitOfWork.CustomerRepository.Update(customer);
+                    unitOfWork.Complete();
+                }
+                catch (Exception)
+                {
+
+                }
             }
         }
         [HttpPost]
@@ -150,8 +211,12 @@ namespace Magazyn2019.Controllers
         public int postCustomers(JObject jsonResult)
         {
             Customer customer = new Customer();
-            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
-            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
+            User activeUser = getActiveUser();
+
+            if (activeUser == null)
+            {
+                return 3;
+            }
 
             try
             {
@@ -170,6 +235,10 @@ namespace Magazyn2019.Controllers
             {
                 return 0;
             }
+            if (String.IsNullOrEmpty(customer.name) || String.IsNullOrEmpty(customer.street) || String.IsNullOrEmpty(customer.zipCode) || String.IsNullOrEmpty(customer.city))
+            {
+                return 0;
+            }
             if (unitOfWork.CustomerRepository.CheckIfExistActiveCustomerByName(customer.name))
             {
                 return 1;
@@ -179,16 +248,31 @@ namespace Magazyn2019.Controllers
                 return 2;
             }
 
-            unitOfWork.CustomerRepository.Insert(customer);
-            unitOfWork.Complete();
+            try
+            {
+                unitOfWork.CustomerRepository.Insert(customer);
+                unitOfWork.Complete();
 
-            return -1;
+                return -1;
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
+
         }
         [HttpPut]
         [Route("Customers/{id}")]
         public int putCustomer(int id, JObject jsonResult)
         {
             Customer customerForEdit = unitOfWork.CustomerRepository.GetById(id);
+            User activeUser = getActiveUser();
+
+            if (activeUser == null)
+            {
+                return 3;
+            }
+
             try
             {
                 customerForEdit.code = (int)jsonResult.SelectToken("code");
@@ -199,6 +283,11 @@ namespace Magazyn2019.Controllers
                 customerForEdit.type = (int)jsonResult.SelectToken("type");
             }
             catch (Exception)
+            {
+                return 0;
+            }
+
+            if (String.IsNullOrEmpty(customerForEdit.name) || String.IsNullOrEmpty(customerForEdit.street) || String.IsNullOrEmpty(customerForEdit.zipCode) || String.IsNullOrEmpty(customerForEdit.city))
             {
                 return 0;
             }
@@ -220,10 +309,18 @@ namespace Magazyn2019.Controllers
                     }
                 }
             }
-            unitOfWork.CustomerRepository.Update(customerForEdit);
-            unitOfWork.Complete();
+            try
+            {
+                unitOfWork.CustomerRepository.Update(customerForEdit);
+                unitOfWork.Complete();
 
-            return -1;
+                return -1;
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
+
         }
         /*Group webapi*/
         [HttpGet]
@@ -247,9 +344,16 @@ namespace Magazyn2019.Controllers
             Group group = unitOfWork.GroupRepository.GetById(id);
             if (group != null)
             {
-                group.is_active = false;
-                unitOfWork.GroupRepository.Update(group);
-                unitOfWork.Complete();
+                try
+                {
+                    group.is_active = false;
+                    unitOfWork.GroupRepository.Update(group);
+                    unitOfWork.Complete();
+                }
+                catch (Exception)
+                {
+
+                }
             }
         }
         [HttpPost]
@@ -258,9 +362,12 @@ namespace Magazyn2019.Controllers
         {
 
             Group group = new Group();
+            User activeUser = getActiveUser();
 
-            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
-            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
+            if (activeUser == null)
+            {
+                return 3;
+            }
 
             try
             {
@@ -277,6 +384,10 @@ namespace Magazyn2019.Controllers
             {
                 return 0;
             }
+            if (String.IsNullOrEmpty(group.name) || String.IsNullOrEmpty(group.description))
+            {
+                return 0;
+            }
             if (unitOfWork.GroupRepository.CheckIfExistActiveGroupByName(group.name))
             {
                 return 1;
@@ -286,15 +397,30 @@ namespace Magazyn2019.Controllers
                 return 2;
             }
 
-            unitOfWork.GroupRepository.Insert(group);
-            unitOfWork.Complete();
-            return -1;
+            try
+            {
+                unitOfWork.GroupRepository.Insert(group);
+                unitOfWork.Complete();
+                return -1;
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
+
         }
         [HttpPut]
         [Route("Groups/{id}")]
         public int putGroup(int id, JObject jsonResult)
         {
             Group groupForEdit = unitOfWork.GroupRepository.GetById(id);
+            User activeUser = getActiveUser();
+
+            if (activeUser == null)
+            {
+                return 3;
+            }
+
             try
             {
                 groupForEdit.code = (int)jsonResult.SelectToken("code");
@@ -305,7 +431,10 @@ namespace Magazyn2019.Controllers
             {
                 return 0;
             }
-
+            if (String.IsNullOrEmpty(groupForEdit.name) || String.IsNullOrEmpty(groupForEdit.description))
+            {
+                return 0;
+            }
             var groupList = unitOfWork.GroupRepository.GetAll().Where(g => g.is_active == true);
 
             //check for other objects with the same code and name
@@ -324,9 +453,17 @@ namespace Magazyn2019.Controllers
                     }
                 }
             }
-            unitOfWork.GroupRepository.Update(groupForEdit);
-            unitOfWork.Complete();
-            return -1;
+            try
+            {
+                unitOfWork.GroupRepository.Update(groupForEdit);
+                unitOfWork.Complete();
+                return -1;
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
+
         }
 
         /*Product webapi*/        
@@ -375,9 +512,17 @@ namespace Magazyn2019.Controllers
             Product product = unitOfWork.ProductRepository.GetById(id);
             if (product != null)
             {
-                product.is_active = false;
-                unitOfWork.ProductRepository.Update(product);
-                unitOfWork.Complete();
+                try
+                {
+                    product.is_active = false;
+                    unitOfWork.ProductRepository.Update(product);
+                    unitOfWork.Complete();
+                }
+                catch (Exception)
+                {
+
+                }
+
             }
         }
         [HttpPost]
@@ -386,9 +531,12 @@ namespace Magazyn2019.Controllers
         {
 
             Product product = new Product();
+            User activeUser = getActiveUser();
 
-            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
-            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
+            if (activeUser == null)
+            {
+                return 3;
+            }
 
             try
             {
@@ -408,6 +556,10 @@ namespace Magazyn2019.Controllers
             {
                 return 0;
             }
+            if (String.IsNullOrEmpty(product.name) || String.IsNullOrEmpty(product.description))
+            {
+                return 0;
+            }
             if (unitOfWork.ProductRepository.CheckIfExistActiveProductByName(product.name))
             {
                 return 1;
@@ -417,16 +569,31 @@ namespace Magazyn2019.Controllers
                 return 2;
             }
 
-            unitOfWork.ProductRepository.Insert(product);
-            unitOfWork.Complete();
+            try
+            {
+                unitOfWork.ProductRepository.Insert(product);
+                unitOfWork.Complete();
 
-            return -1;
+                return -1;
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
+
         }
         [HttpPut]
         [Route("Products/{id}")]
         public int putProduct(int id, JObject jsonResult)
         {
             Product productForEdit = unitOfWork.ProductRepository.GetById(id);
+            User activeUser = getActiveUser();
+
+            if (activeUser == null)
+            {
+                return 3;
+            }
+
             try
             {
                 productForEdit.id_group = (int)jsonResult.SelectToken("groupType");
@@ -434,13 +601,16 @@ namespace Magazyn2019.Controllers
                 productForEdit.name = (string)jsonResult.SelectToken("name");
                 productForEdit.unit = (int)jsonResult.SelectToken("unitType");
                 productForEdit.description = (string)jsonResult.SelectToken("description");
-                productForEdit.Group = db.Groups.Single(x => x.id_group == productForEdit.id_group);
+                productForEdit.Group = unitOfWork.GroupRepository.GetById(productForEdit.id_group);
             }
             catch (Exception)
             {
                 return 0;
             }
-
+            if (String.IsNullOrEmpty(productForEdit.name) || String.IsNullOrEmpty(productForEdit.description))
+            {
+                return 0;
+            }
             var productList = unitOfWork.ProductRepository.GetAll().Where(g => g.is_active == true);
 
             foreach (Product p in productList)
@@ -457,17 +627,30 @@ namespace Magazyn2019.Controllers
                     }
                 }
             }
-            unitOfWork.ProductRepository.Update(productForEdit);
-            unitOfWork.Complete();
-            return -1;
+            try
+            {
+                unitOfWork.ProductRepository.Update(productForEdit);
+                unitOfWork.Complete();
+                return -1;
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
+
         }
         /*Moves*/
         [HttpPost]
         [Route("Moves")]
-        public void postMoves(JObject jsonResult)
+        public int postMoves(JObject jsonResult)
         {
-            int idUser = (int)HttpContext.Current.Session["ActiveUserId"];
-            User activeUser = unitOfWork.UserRepository.GetActiveUser(idUser);
+
+            User activeUser = getActiveUser();
+
+            if (activeUser == null)
+            {
+                return 3;
+            }
 
             Move move = new Move();
 
@@ -475,7 +658,7 @@ namespace Magazyn2019.Controllers
 
             move.id_warehouse1 = (int)jsonResult.SelectToken("warehouseOne");
             move.time = (DateTime)jsonResult.SelectToken("date");
-            move.id_user = idUser;
+            move.id_user = activeUser.id_user;
             move.number = unitOfWork.MoveRepository.GetNumberOfDocuments(move.type);
             move.WarehouseOne = unitOfWork.WarehouseRepository.GetById(move.id_warehouse1);
             move.User = activeUser;
@@ -494,14 +677,22 @@ namespace Magazyn2019.Controllers
             }
 
             move.Inventories = inventoryOperations(jsonResult, move.id_warehouse1, move.id_warehouse2, move.type);
-
-            unitOfWork.MoveRepository.Insert(move);
-            unitOfWork.Complete();
+            try
+            {
+                unitOfWork.MoveRepository.Insert(move);
+                unitOfWork.Complete();
+            }
+            catch (Exception)
+            {
+                return 3;
+            }
 
             //generate pdf document
             PdfDocument pdfDocument = new PdfDocument();
             byte[] moveDocument = pdfDocument.preparePdf(move);
             pdfDocument.savePDF(moveDocument, move);
+
+            return 1;
         }
         /*inventories*/
         [HttpGet]

@@ -61,7 +61,7 @@ namespace Magazyn2019.Repository
                               description = p.description,
                               unit = p.unit,
                               created = p.created,
-                              group_name = p.Group.name,
+                              group_name = p.Group.id_group,
                               userName = p.User.fullName,
                           };
             return product;
